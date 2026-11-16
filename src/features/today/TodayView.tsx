@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, CheckCircle, Sparkles } from 'lucide-react';
+import { ShieldAlert, CheckCircle, Sparkles, Timer } from 'lucide-react';
 import { useTasks } from '../../app/providers/TaskProvider';
+import { Task, TaskPriority } from '../../types/task';
+import { RecurrenceFrequency } from '../../types/recurrence';
 import { TaskItem } from '../../components/tasks/TaskItem';
 import { TaskInput } from '../../components/tasks/TaskInput';
+import { TaskFilterBar } from '../../components/tasks/TaskFilterBar';
+import { DailyMoodBanner } from '../../components/mood/DailyMoodBanner';
+import { WeeklyStatsCard } from '../../components/stats/WeeklyStatsCard';
+import { RoutineTemplatesModal } from '../../components/tasks/RoutineTemplatesModal';
+import { FocusTimerModal } from '../../components/focus/FocusTimerModal';
 import { formatDisplayDate, isTodayDate, isPastDate } from '../../domain/date/dateService';
 import { QuoteService, Quote } from '../../domain/quote/quoteService';
 import styles from './TodayView.module.css';
@@ -25,6 +32,10 @@ export const TodayView: React.FC = () => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [quote, setQuote] = useState<Quote>(() => QuoteService.getDailyQuote(selectedDate));
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
+  const [focusTask, setFocusTask] = useState<Task | null>(null);
+  const [isFocusModalOpen, setIsFocusModalOpen] = useState(false);
 
   useEffect(() => {
     setQuote(QuoteService.getDailyQuote(selectedDate));
@@ -42,6 +53,11 @@ export const TodayView: React.FC = () => {
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
   const allCompleted = totalCount > 0 && completedCount === totalCount;
 
+  // Available icons in current day's tasks
+  const availableIcons = Array.from(
+    new Set(tasks.map((t) => t.icon).filter(Boolean))
+  ) as string[];
+
   // Tamamlanmamış olanlar üstte, tamamlananlar altta
   const sortedTasks = [...tasks].sort((a, b) => {
     if (a.status !== b.status) {
@@ -49,6 +65,10 @@ export const TodayView: React.FC = () => {
     }
     return a.sort_order - b.sort_order;
   });
+
+  const displayedTasks = activeFilter
+    ? sortedTasks.filter((t) => t.icon === activeFilter)
+    : sortedTasks;
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
@@ -99,28 +119,75 @@ export const TodayView: React.FC = () => {
     await reorderTasks(reordered.map((t) => t.id));
   };
 
+  const handleApplyTemplate = async (
+    templateTasks: { title: string; icon?: string; priority?: TaskPriority }[]
+  ) => {
+    for (const t of templateTasks) {
+      await addTask({
+        title: t.title,
+        icon: t.icon || null,
+        priority: t.priority || null,
+      });
+    }
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.dateRow}>
           <h1 className={styles.title}>{formatDisplayDate(selectedDate)}</h1>
-          {!isCurrentToday && (
-            <button
-              type="button"
-              className={styles.returnTodayButton}
-              onClick={() => setSelectedDate(todayStr)}
-            >
-              Bugüne Dön
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {!isReadOnly && (
+              <>
+                <button
+                  type="button"
+                  className={styles.returnTodayButton}
+                  onClick={() => setIsTemplatesOpen(true)}
+                  title="Hazır rutin şablonu yükle"
+                >
+                  <Sparkles size={12} style={{ display: 'inline', marginRight: 4 }} />
+                  Şablonlar
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.returnTodayButton}
+                  onClick={() => {
+                    setFocusTask(null);
+                    setIsFocusModalOpen(true);
+                  }}
+                  title="Serbest Odak Sayacı (Pomodoro)"
+                >
+                  <Timer size={12} style={{ display: 'inline', marginRight: 4 }} />
+                  Odaklan
+                </button>
+              </>
+            )}
+
+            {!isCurrentToday && (
+              <button
+                type="button"
+                className={styles.returnTodayButton}
+                onClick={() => setSelectedDate(todayStr)}
+              >
+                Bugüne Dön
+              </button>
+            )}
+          </div>
         </div>
-        <span className={styles.subTitle}>
-          {isCurrentToday
-            ? 'Bugüne yer aç.'
-            : isPast
-            ? 'Geçmiş gün arşivi.'
-            : 'Gelecek günlerin planı.'}
-        </span>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+          <span className={styles.subTitle}>
+            {isCurrentToday
+              ? 'Bugüne yer aç.'
+              : isPast
+              ? 'Geçmiş gün arşivi.'
+              : 'Gelecek günlerin planı.'}
+          </span>
+
+          {/* Günün Hissi / Mood Banner */}
+          <DailyMoodBanner dateStr={selectedDate} />
+        </div>
 
         {isPast && (
           <div className={styles.readOnlyBanner}>
@@ -166,18 +233,29 @@ export const TodayView: React.FC = () => {
         </section>
       )}
 
+      {/* İkon / Kategori Filtreleme Çubuğu */}
+      <TaskFilterBar
+        availableIcons={availableIcons}
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
+      />
+
       <section className={styles.taskList}>
-        {sortedTasks.map((task, index) => (
+        {displayedTasks.map((task, index) => (
           <TaskItem
             key={task.id}
             task={task}
             index={index}
-            totalTasks={sortedTasks.length}
+            totalTasks={displayedTasks.length}
             isReadOnly={isReadOnly}
             onToggle={toggleTask}
             onUpdate={(id, updates) => updateTask(id, updates)}
             onDelete={deleteTask}
             onSnooze={snoozeTaskToTomorrow}
+            onStartFocus={(t) => {
+              setFocusTask(t);
+              setIsFocusModalOpen(true);
+            }}
             onMoveUp={handleMoveUp}
             onMoveDown={handleMoveDown}
             onDragStart={handleDragStart}
@@ -190,11 +268,19 @@ export const TodayView: React.FC = () => {
         ))}
 
         <TaskInput
-          onAddTask={(title, reminderAt, recurrenceFrequency) =>
+          onAddTask={(
+            title: string,
+            reminderAt?: string | null,
+            recurrenceFrequency?: RecurrenceFrequency | null,
+            icon?: string | null,
+            priority?: TaskPriority | null
+          ) =>
             addTask({
               title,
               reminder_at: reminderAt,
               recurrence_frequency: recurrenceFrequency,
+              icon: icon || null,
+              priority: priority || null,
             })
           }
           isReadOnly={isReadOnly}
@@ -215,6 +301,27 @@ export const TodayView: React.FC = () => {
           </div>
         )}
       </section>
+
+      {/* Haftalık Ritim & İstatistikler */}
+      <WeeklyStatsCard tasks={tasks} todayStr={todayStr} />
+
+      {/* Rutin Şablonları Modalı */}
+      <RoutineTemplatesModal
+        isOpen={isTemplatesOpen}
+        onClose={() => setIsTemplatesOpen(false)}
+        onApplyTemplate={handleApplyTemplate}
+      />
+
+      {/* Odaklanma (Pomodoro) Modalı */}
+      <FocusTimerModal
+        task={focusTask}
+        isOpen={isFocusModalOpen}
+        onClose={() => {
+          setIsFocusModalOpen(false);
+          setFocusTask(null);
+        }}
+        onTaskComplete={(taskId) => toggleTask(taskId)}
+      />
     </div>
   );
 };

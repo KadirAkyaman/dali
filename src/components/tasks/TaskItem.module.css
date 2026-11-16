@@ -254,6 +254,60 @@
   font-weight: var(--font-medium);
 }
 
+.taskIconBadge {
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 2px;
+}
+
+.priorityDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  display: inline-block;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+
+.priorityLow {
+  background-color: #60a5fa;
+}
+
+.priorityMedium {
+  background-color: #f59e0b;
+}
+
+.priorityHigh {
+  background-color: #ef4444;
+}
+
+.subtaskBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-2xs);
+  color: var(--text-secondary);
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.subtaskBadge:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.actionButtonFocus:hover {
+  color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
 .actions {
   display: flex;
   align-items: center;

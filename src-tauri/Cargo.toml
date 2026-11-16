@@ -1,6 +1,6 @@
 [package]
 name = "dali"
-version = "0.2.0"
+version = "0.3.0"
 description = "Dali - Minimalist Personal Daily Planner"
 authors = ["Dali Team"]
 edition = "2021"

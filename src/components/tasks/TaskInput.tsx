@@ -1,15 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { RecurrenceFrequency } from '../../types/recurrence';
+import { TaskPriority } from '../../types/task';
 import { ModernTimePicker } from '../ui/ModernTimePicker';
 import { ModernRepeatSelect } from '../ui/ModernRepeatSelect';
+import { ModernIconPicker } from '../ui/ModernIconPicker';
+import { ModernPrioritySelect } from '../ui/ModernPrioritySelect';
 import styles from './TaskInput.module.css';
 
 interface TaskInputProps {
   onAddTask: (
     title: string,
     reminderAt?: string | null,
-    recurrenceFrequency?: RecurrenceFrequency | null
+    recurrenceFrequency?: RecurrenceFrequency | null,
+    icon?: string | null,
+    priority?: TaskPriority | null
   ) => Promise<void>;
   isReadOnly: boolean;
 }
@@ -19,6 +24,8 @@ export const TaskInput: React.FC<TaskInputProps> = ({ onAddTask, isReadOnly }) =
   const [title, setTitle] = useState('');
   const [reminderTime, setReminderTime] = useState('');
   const [recurrence, setRecurrence] = useState<RecurrenceFrequency | ''>('');
+  const [icon, setIcon] = useState('');
+  const [priority, setPriority] = useState<TaskPriority | ''>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -51,6 +58,8 @@ export const TaskInput: React.FC<TaskInputProps> = ({ onAddTask, isReadOnly }) =
     setTitle('');
     setReminderTime('');
     setRecurrence('');
+    setIcon('');
+    setPriority('');
     setIsOpen(false);
   };
 
@@ -61,10 +70,18 @@ export const TaskInput: React.FC<TaskInputProps> = ({ onAddTask, isReadOnly }) =
 
     try {
       setIsSubmitting(true);
-      await onAddTask(trimmed, reminderTime || null, recurrence || null);
+      await onAddTask(
+        trimmed,
+        reminderTime || null,
+        recurrence || null,
+        icon || null,
+        priority || null
+      );
       setTitle('');
       setReminderTime('');
       setRecurrence('');
+      setIcon('');
+      setPriority('');
       // Bir sonraki görev için girişi hazır tut
       inputRef.current?.focus();
     } catch {
@@ -120,6 +137,10 @@ export const TaskInput: React.FC<TaskInputProps> = ({ onAddTask, isReadOnly }) =
 
         <div className={styles.actionBar}>
           <div className={styles.optionsGroup}>
+            <ModernIconPicker value={icon} onChange={setIcon} />
+
+            <ModernPrioritySelect value={priority} onChange={setPriority} />
+
             <ModernTimePicker
               value={reminderTime}
               onChange={setReminderTime}

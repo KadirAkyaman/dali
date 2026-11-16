@@ -12,6 +12,7 @@ interface CompanionWidgetProps {
 }
 
 const WIDGET_SIZES = [
+  { id: 'ultra', label: 'Ultra', width: 280, height: 180 },
   { id: 'small', label: 'Küçük', width: 300, height: 420 },
   { id: 'medium', label: 'Orta', width: 340, height: 500 },
   { id: 'large', label: 'Geniş', width: 420, height: 620 },
@@ -291,6 +292,23 @@ export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull
                 >
                   {t.status === 'completed' && <Check size={10} strokeWidth={2.5} />}
                 </button>
+                {t.priority && (
+                  <span
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: '50%',
+                      flexShrink: 0,
+                      backgroundColor:
+                        t.priority === 'high'
+                          ? '#ef4444'
+                          : t.priority === 'medium'
+                          ? '#f59e0b'
+                          : '#60a5fa',
+                    }}
+                  />
+                )}
+                {t.icon && <span style={{ fontSize: '13px', flexShrink: 0 }}>{t.icon}</span>}
                 <span
                   style={{
                     color: t.status === 'completed' ? 'var(--text-tertiary)' : 'var(--text-primary)',

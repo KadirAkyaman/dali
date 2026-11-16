@@ -116,8 +116,12 @@ export const SettingsView: React.FC = () => {
 
   const themeLabels: Record<ThemeMode, string> = {
     system: 'Sistem',
-    light: 'Açık',
+    light: 'Leylak',
     dark: 'Koyu',
+    sage: 'Adaçayı',
+    slate: 'Nordic Mavi',
+    peach: 'Şeftali',
+    mocha: 'Kahve',
   };
 
   return (
@@ -140,8 +144,8 @@ export const SettingsView: React.FC = () => {
             </span>
           </div>
 
-          <div className={styles.segmentedControl}>
-            {(['system', 'light', 'dark'] as ThemeMode[]).map((mode) => (
+          <div className={styles.segmentedControl} style={{ flexWrap: 'wrap', maxWidth: '360px' }}>
+            {(['system', 'light', 'dark', 'sage', 'slate', 'peach', 'mocha'] as ThemeMode[]).map((mode) => (
               <button
                 key={mode}
                 type="button"
@@ -302,7 +306,7 @@ export const SettingsView: React.FC = () => {
         <h2 className={styles.sectionTitle}>Dali Hakkında ve Güncellemeler</h2>
         <div className={styles.row}>
           <div className={styles.labelCol}>
-            <span className={styles.label}>Sürüm 0.2.0</span>
+            <span className={styles.label}>Sürüm 0.3.0</span>
             <span className={styles.description}>
               Bugüne yer aç. Minimalist kişisel günlük çalışma planlayıcısı.
             </span>

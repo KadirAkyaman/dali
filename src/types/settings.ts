@@ -1,4 +1,4 @@
-export type ThemeMode = 'system' | 'light' | 'dark';
+export type ThemeMode = 'system' | 'light' | 'dark' | 'sage' | 'slate' | 'peach' | 'mocha';
 
 export interface AppSettings {
   theme: ThemeMode;

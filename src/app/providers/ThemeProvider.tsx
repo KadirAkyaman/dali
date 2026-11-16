@@ -4,7 +4,7 @@ import { LocalSettingsRepository } from '../../repositories/localRepository';
 
 interface ThemeContextType {
   theme: ThemeMode;
-  resolvedTheme: 'light' | 'dark';
+  resolvedTheme: 'light' | 'dark' | 'sage' | 'slate' | 'peach' | 'mocha';
   setTheme: (theme: ThemeMode) => Promise<void>;
 }
 
@@ -37,7 +37,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
-  const resolvedTheme: 'light' | 'dark' =
+  const resolvedTheme: 'light' | 'dark' | 'sage' | 'slate' | 'peach' | 'mocha' =
     theme === 'system' ? (systemIsDark ? 'dark' : 'light') : theme;
 
   useEffect(() => {

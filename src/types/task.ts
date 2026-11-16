@@ -2,6 +2,14 @@ import { RecurrenceFrequency } from './recurrence';
 
 export type TaskStatus = 'open' | 'completed';
 
+export type TaskPriority = 'low' | 'medium' | 'high';
+
+export interface Subtask {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -16,6 +24,9 @@ export interface Task {
   rollover_count: number;
   reminder_at: string | null;
   recurrence_rule_id: string | null;
+  icon?: string | null;
+  priority?: TaskPriority | null;
+  subtasks?: Subtask[];
 }
 
 export type TaskEventType =
@@ -44,6 +55,9 @@ export interface CreateTaskDTO {
   recurrence_rule_id?: string | null;
   recurrence_frequency?: RecurrenceFrequency | null;
   sort_order?: number;
+  icon?: string | null;
+  priority?: TaskPriority | null;
+  subtasks?: Subtask[];
 }
 
 export interface UpdateTaskDTO {
@@ -52,4 +66,7 @@ export interface UpdateTaskDTO {
   reminder_at?: string | null;
   recurrence_frequency?: RecurrenceFrequency | null;
   sort_order?: number;
+  icon?: string | null;
+  priority?: TaskPriority | null;
+  subtasks?: Subtask[];
 }

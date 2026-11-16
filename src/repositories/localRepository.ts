@@ -83,6 +83,9 @@ export class LocalTaskRepository implements ITaskRepository {
       rollover_count: 0,
       reminder_at: taskData.reminder_at || null,
       recurrence_rule_id: taskData.recurrence_rule_id || null,
+      icon: taskData.icon || null,
+      priority: taskData.priority || null,
+      subtasks: taskData.subtasks || [],
     };
     tasks.push(newTask);
     this.saveTasks(tasks);

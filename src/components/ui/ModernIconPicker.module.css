@@ -1,0 +1,91 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-focus);
+  background-color: var(--surface);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.trigger:hover {
+  background-color: var(--surface-hover);
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.triggerActive {
+  background-color: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.popoverContent {
+  width: 210px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-popover);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.popoverTitle {
+  font-size: var(--text-2xs);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.iconBtn {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  border-radius: var(--radius-xs);
+  background-color: var(--surface-subtle);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.iconBtn:hover {
+  background-color: var(--surface-hover);
+  transform: scale(1.1);
+}
+
+.iconBtnActive {
+  background-color: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.clearBtn {
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+  text-align: center;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.clearBtn:hover {
+  color: var(--danger);
+}

@@ -210,6 +210,9 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
           notes: updates.notes,
           reminder_at: updates.reminder_at,
           sort_order: updates.sort_order,
+          icon: updates.icon,
+          priority: updates.priority,
+          subtasks: updates.subtasks,
         },
         todayStr
       );

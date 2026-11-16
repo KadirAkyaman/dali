@@ -1,0 +1,46 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border);
+  width: fit-content;
+}
+
+.label {
+  font-size: var(--text-2xs);
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
+}
+
+.moodGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.moodBtn {
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+  background: transparent;
+}
+
+.moodBtn:hover {
+  transform: scale(1.15);
+  background-color: var(--surface-hover);
+}
+
+.moodBtnActive {
+  background-color: var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transform: scale(1.1);
+}
