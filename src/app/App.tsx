@@ -7,6 +7,7 @@ import { TodayView } from '../features/today/TodayView';
 import { FocusView } from '../features/focus/FocusView';
 import { HabitsView } from '../features/habits/HabitsView';
 import { NotesView } from '../features/notes/NotesView';
+import { RoutinesView } from '../features/routines/RoutinesView';
 import { AnalyticsView } from '../features/analytics/AnalyticsView';
 import { CalendarView } from '../features/calendar/CalendarView';
 import { CompletedView } from '../features/completed/CompletedView';
@@ -112,6 +113,7 @@ const DaliApp: React.FC = () => {
       {activeTab === 'focus' && <FocusView />}
       {activeTab === 'habits' && <HabitsView />}
       {activeTab === 'notes' && <NotesView />}
+      {activeTab === 'routines' && <RoutinesView />}
       {activeTab === 'analytics' && <AnalyticsView />}
       {activeTab === 'calendar' && (
         <CalendarView onSelectDateAndGoToToday={handleSelectDateFromCalendar} />

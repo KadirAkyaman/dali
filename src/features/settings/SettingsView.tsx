@@ -306,7 +306,7 @@ export const SettingsView: React.FC = () => {
         <h2 className={styles.sectionTitle}>Dali Hakkında ve Güncellemeler</h2>
         <div className={styles.row}>
           <div className={styles.labelCol}>
-            <span className={styles.label}>Sürüm 0.7.0</span>
+            <span className={styles.label}>Sürüm 0.8.0</span>
             <span className={styles.description}>
               Bugüne yer aç. Minimalist kişisel günlük çalışma planlayıcısı.
             </span>

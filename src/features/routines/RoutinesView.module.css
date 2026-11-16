@@ -1,0 +1,287 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  animation: fadeIn 200ms ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.subTitle {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.syncBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: var(--font-medium);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.syncBtn:hover {
+  background-color: var(--accent);
+  color: #fff;
+}
+
+/* 7 GÜNLÜK KARTLAR GRID */
+.daysGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.dayCard {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: all var(--transition-fast);
+}
+
+.dayCard:hover {
+  border-color: var(--border-focus);
+}
+
+.dayCardToday {
+  border-color: var(--accent);
+  background-color: var(--surface-subtle);
+  box-shadow: 0 2px 8px var(--accent-soft);
+}
+
+.dayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-2);
+}
+
+.dayTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dayTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.todayBadge {
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background-color: var(--accent);
+  color: #fff;
+}
+
+.taskCountBadge {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.addTriggerBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.addTriggerBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background-color: var(--surface-subtle);
+}
+
+.tasksList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.taskRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  transition: all var(--transition-fast);
+}
+
+.taskRow:hover {
+  border-color: var(--border-focus);
+}
+
+.taskLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.taskTitle {
+  color: var(--text-primary);
+  font-weight: var(--font-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.taskMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.timeTag {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+  transition: color var(--transition-fast);
+}
+
+.deleteBtn:hover {
+  color: var(--danger);
+}
+
+/* İÇERİDE GÖREV EKLEME FORMU */
+.addForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background-color: var(--surface-subtle);
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-xs);
+  animation: fadeIn 100ms ease;
+}
+
+.addInput {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 12px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  background-color: var(--surface);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.addInput:focus {
+  border-color: var(--accent);
+}
+
+.addControlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.toolsGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.formActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cancelBtn {
+  font-size: 11px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.submitBtn {
+  font-size: 11px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--radius-xs);
+  background-color: var(--accent);
+  color: #fff;
+  font-weight: var(--font-medium);
+  cursor: pointer;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.emptyState {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-style: italic;
+  padding: 6px 0;
+}

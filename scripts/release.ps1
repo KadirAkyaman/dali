@@ -66,7 +66,7 @@ $headers = @{
 $releaseBody = @{
     tag_name = "v$Version"
     name = "Dali v$Version"
-    body = "### ✨ Dali v$Version Yenilikleri`n`n- 📝 **Notion Tarzı Zengin Markdown Not Defteri**: Sol sütunda aşağıya doğru uzanan not listesi, arama çubuğu ve her gün için ayrı notlar. Başlık girilmediğinde o günün tarihi otomatik başlık olur.`n- ⚡ **Notion Slash (/) Komut Menüsü**: /h1, /h2, /h3, /b (madde), /n (numara listesi), /t (yapılacak kutusu), /q (alıntı bloğu) ve /c (kod) klavye öneri paleti.`n- 👁️ **Canlı Markdown Önizleme ve Göreve Dönüştür**: Notlarınızı tek tıkla şık önizleme moduna geçirme ve satırları bugünün görev listesine aktarma.`n- 🎯 **Spotlight Hızlı Yakalama (Ctrl + Space)**, **Timeboxing Zaman Çizelgesi**, **Yıllık Isı Haritası** ve **Vektör İkon Paketi**."
+    body = "### ✨ Dali v$Version Yenilikleri`n`n- 🔁 **Tekrarlı Görevler ve 7 Günlük Haftalık Rutinler**: Sol kenar çubuğuna eklenen Tekrarlananlar modülü ile haftanın 7 günü (Pazartesi .. Pazar) için otomatik tekrarlanacak işler belirleme. O gün geldiğinde planınıza otomatik olarak işlenir.`n- ⚡ **Otomatik ve Anlık Senkronizasyon**: Günlük rutinleri tek tıkla bugüne aktarma veya gün başladığında otomatik yükleme desteği.`n- 📝 **Notion Tarzı Markdown Not Defteri**: Sol sütun not listesi, arama, ve /h1, /b, /n, /q slash komutları.`n- 🎯 **Spotlight Hızlı Yakalama (Ctrl + Space)**, **Timeboxing Zaman Çizelgesi**, **Yıllık Isı Haritası** ve **Vektör İkon Paketi**."
     draft = $false
     prerelease = $false
 }
@@ -82,7 +82,7 @@ $sig = [System.IO.File]::ReadAllText((Resolve-Path $sigPath)).Trim()
 
 $latestJson = @{
     version = $Version
-    notes = "Dali v${Version} - Notion Tarzi Zengin Markdown Not Defteri, Sol Not Listesi, Slash Komutlari (/h1, /b, /n, /q) ve Canli Onizleme."
+    notes = "Dali v${Version} - Tekrarli Gorevler ve 7 Gunluk Rutin Planlayici, Notion Markdown Notlari ve Spotlight Yakalama."
     pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     platforms = @{
         "windows-x86_64" = @{

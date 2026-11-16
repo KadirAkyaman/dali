@@ -4,6 +4,7 @@ import { TaskService } from '../../domain/task/taskService';
 import { RolloverService } from '../../domain/rollover/rolloverService';
 import { ReminderService } from '../../domain/reminder/reminderService';
 import { RecurrenceService } from '../../domain/recurrence/recurrenceService';
+import { DayRoutine } from '../../types/routine';
 import {
   LocalTaskRepository,
   LocalTaskEventRepository,
@@ -69,8 +70,41 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const currentToday = getTodayDateString();
-      // O gün için tekrarlanan görevleri senkronize et
+      // O gün için tekrarlanan kural görevlerini senkronize et
       await recurrenceService.syncRecurringTasksForDate(date, currentToday);
+
+      // Haftanın gününe ait haftalık rutinleri otomatik yükle
+      try {
+        const appliedKey = `dali_routines_applied_${date}`;
+        if (typeof window !== 'undefined' && !localStorage.getItem(appliedKey)) {
+          const routinesStr = localStorage.getItem('dali_weekly_routines');
+          if (routinesStr) {
+            const routinesList: DayRoutine[] = JSON.parse(routinesStr);
+            const d = new Date(date);
+            const day = d.getDay();
+            const dayNumber = day === 0 ? 7 : day;
+            const matchingDay = routinesList.find((r) => r.dayNumber === dayNumber);
+            if (matchingDay && matchingDay.tasks.length > 0) {
+              for (const t of matchingDay.tasks) {
+                await taskService.createTask(
+                  {
+                    title: t.title,
+                    scheduled_date: date,
+                    reminder_at: t.reminder_at || null,
+                    icon: t.icon || null,
+                    priority: t.priority || null,
+                  },
+                  currentToday
+                );
+              }
+            }
+          }
+          localStorage.setItem(appliedKey, 'true');
+        }
+      } catch (routErr) {
+        console.error('Haftalık rutin senkronizasyon hatası:', routErr);
+      }
+
       const data = await taskService.getTasksForDate(date);
       setTasks(data);
     } catch (err: any) {
