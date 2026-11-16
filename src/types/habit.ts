@@ -11,7 +11,7 @@ export const DEFAULT_HABITS: Habit[] = [
   {
     id: 'habit-water',
     title: 'Günde 2 Litre Su İç',
-    icon: '💧',
+    icon: 'water',
     category: 'Sağlık',
     completedDates: [],
     createdDate: new Date().toISOString().split('T')[0],
@@ -19,7 +19,7 @@ export const DEFAULT_HABITS: Habit[] = [
   {
     id: 'habit-read',
     title: '20 Sayfa Kitap Oku',
-    icon: '📖',
+    icon: 'book',
     category: 'Gelişim',
     completedDates: [],
     createdDate: new Date().toISOString().split('T')[0],
@@ -27,7 +27,7 @@ export const DEFAULT_HABITS: Habit[] = [
   {
     id: 'habit-walk',
     title: '5000 Adım / Yürüyüş',
-    icon: '🚶',
+    icon: 'walk',
     category: 'Beden',
     completedDates: [],
     createdDate: new Date().toISOString().split('T')[0],
@@ -35,14 +35,29 @@ export const DEFAULT_HABITS: Habit[] = [
   {
     id: 'habit-meditate',
     title: '10 Dakika Sessizlik & Nefes',
-    icon: '🧘',
+    icon: 'leaf',
     category: 'Zihin',
     completedDates: [],
     createdDate: new Date().toISOString().split('T')[0],
   },
 ];
 
-export const HABIT_ICONS = ['💧', '📖', '🚶', '🧘', '🏃', '💻', '🎨', '🌿', '☕', '🍎', '💤', '✍️', '🎵', '🚴'];
+export const HABIT_ICONS = [
+  'water',
+  'book',
+  'walk',
+  'leaf',
+  'gym',
+  'code',
+  'art',
+  'coffee',
+  'music',
+  'idea',
+  'target',
+  'heart',
+  'sparkles',
+  'clock',
+];
 
 export function calculateHabitStreak(
   completedDates: string[],

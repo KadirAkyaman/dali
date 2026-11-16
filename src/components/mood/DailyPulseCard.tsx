@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
 import { MOOD_OPTIONS, MoodId } from '../../types/mood';
+import { DynamicIcon } from '../ui/DynamicIcon';
 import styles from './DailyPulseCard.module.css';
 
 interface DailyPulseCardProps {
@@ -8,11 +9,11 @@ interface DailyPulseCardProps {
 }
 
 const MOOD_INSIGHTS: Record<MoodId, string> = {
-  calm: '🌿 Dingin bir zihinle adım adım ilerle. Acele yok, sadece istikrar.',
-  energetic: '⚡ Harika bir ivme! En zorlu veya yaratıcı görevlerini öne alıp hız kazanabilirsin.',
-  focused: '🎯 Akıştasın. Bildirimleri sessize alıp derin odak bloğunu tamamla.',
-  resting: '☕ Nefes almayı unutma. Düzenli küçük molalar zihnini ve verimliliğini taze tutar.',
-  tired: '☁️ Kendine nazik davran. Bugün yalnızca en kritik 1-2 görevi bitirip dinlenmeye alan aç.',
+  calm: 'Dingin bir zihinle adım adım ilerle. Acele yok, sadece istikrar.',
+  energetic: 'Harika bir ivme! En zorlu veya yaratıcı görevlerini öne alıp hız kazanabilirsin.',
+  focused: 'Akıştasın. Bildirimleri sessize alıp derin odak bloğunu tamamla.',
+  resting: 'Nefes almayı unutma. Düzenli küçük molalar zihnini ve verimliliğini taze tutar.',
+  tired: 'Kendine nazik davran. Bugün yalnızca en kritik 1-2 görevi bitirip dinlenmeye alan aç.',
 };
 
 export const DailyPulseCard: React.FC<DailyPulseCardProps> = ({ dateStr }) => {
@@ -86,7 +87,7 @@ export const DailyPulseCard: React.FC<DailyPulseCardProps> = ({ dateStr }) => {
               className={`${styles.moodPill} ${isActive ? styles.moodPillActive : ''}`}
               onClick={() => handleSelectMood(opt.id)}
             >
-              <span className={styles.emoji}>{opt.emoji}</span>
+              <DynamicIcon name={opt.icon} size={18} />
               <span className={styles.label}>{opt.label}</span>
             </button>
           );

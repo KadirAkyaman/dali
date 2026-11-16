@@ -4,6 +4,7 @@ import {
   Timer,
   Flame,
   FileText,
+  BarChart3,
   CalendarDays,
   CheckCircle2,
   Settings2,
@@ -11,7 +12,7 @@ import {
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
-export type ActiveTab = 'today' | 'focus' | 'habits' | 'notes' | 'calendar' | 'completed' | 'settings';
+export type ActiveTab = 'today' | 'focus' | 'habits' | 'notes' | 'analytics' | 'calendar' | 'completed' | 'settings';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -58,6 +59,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onTogg
           >
             <FileText className={styles.navItemIcon} />
             <span>Notlar</span>
+          </button>
+
+          <button
+            className={`${styles.navItem} ${activeTab === 'analytics' ? styles.navItemActive : ''}`}
+            onClick={() => onTabChange('analytics')}
+            aria-label="İstatistikler"
+          >
+            <BarChart3 className={styles.navItemIcon} />
+            <span>İstatistikler</span>
           </button>
 
           <button

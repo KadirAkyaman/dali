@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MOOD_OPTIONS, MoodId } from '../../types/mood';
+import { DynamicIcon } from '../ui/DynamicIcon';
 import styles from './DailyMoodBanner.module.css';
 
 interface DailyMoodBannerProps {
@@ -50,10 +51,10 @@ export const DailyMoodBanner: React.FC<DailyMoodBannerProps> = ({ dateStr }) => 
             type="button"
             className={`${styles.moodBtn} ${selectedMood === opt.id ? styles.moodBtnActive : ''}`}
             onClick={() => handleSelectMood(opt.id)}
-            title={`${opt.label} (${opt.emoji})`}
+            title={opt.label}
             aria-label={opt.label}
           >
-            {opt.emoji}
+            <DynamicIcon name={opt.icon} size={15} />
           </button>
         ))}
       </div>

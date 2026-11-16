@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Flame, Plus, Check, Trash2, Trophy, X } from 'lucide-react';
 import { Habit, DEFAULT_HABITS, HABIT_ICONS, calculateHabitStreak } from '../../types/habit';
+import { DynamicIcon } from '../../components/ui/DynamicIcon';
 import styles from './HabitsView.module.css';
 
 export const HabitsView: React.FC = () => {
@@ -20,7 +21,7 @@ export const HabitsView: React.FC = () => {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
-  const [newIcon, setNewIcon] = useState('✨');
+  const [newIcon, setNewIcon] = useState('sparkles');
   const [newCategory, setNewCategory] = useState('');
 
   useEffect(() => {
@@ -148,7 +149,9 @@ export const HabitsView: React.FC = () => {
                     {isDoneToday && <Check size={14} strokeWidth={2.5} />}
                   </button>
 
-                  <span className={styles.habitIcon}>{habit.icon}</span>
+                  <span className={styles.habitIcon}>
+                    <DynamicIcon name={habit.icon} size={18} />
+                  </span>
 
                   <div className={styles.habitMeta}>
                     <span className={`${styles.habitTitle} ${isDoneToday ? styles.habitTitleChecked : ''}`}>
@@ -235,8 +238,9 @@ export const HabitsView: React.FC = () => {
                       type="button"
                       className={`${styles.iconBtn} ${newIcon === ic ? styles.iconBtnActive : ''}`}
                       onClick={() => setNewIcon(ic)}
+                      title={ic}
                     >
-                      {ic}
+                      <DynamicIcon name={ic} size={15} />
                     </button>
                   ))}
                 </div>

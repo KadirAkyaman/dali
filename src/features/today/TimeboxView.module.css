@@ -1,0 +1,171 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  animation: fadeIn 150ms ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.unscheduledSection {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.unscheduledHeader {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.unscheduledList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.unscheduledChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.unscheduledChip:hover {
+  background-color: var(--surface-hover);
+  border-color: var(--accent);
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.hourRow {
+  display: flex;
+  align-items: flex-start;
+  min-height: 52px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.hourRow:last-child {
+  border-bottom: none;
+}
+
+.hourLabel {
+  width: 52px;
+  font-size: 11px;
+  font-weight: var(--font-medium);
+  color: var(--text-tertiary);
+  padding-top: 6px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.slotContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0 8px 8px;
+  border-left: 1px dashed var(--border);
+  min-height: 44px;
+}
+
+.taskBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: var(--radius-xs);
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  transition: all var(--transition-fast);
+}
+
+.taskBox:hover {
+  border-color: var(--accent);
+  background-color: var(--surface-hover);
+}
+
+.taskBoxCompleted {
+  opacity: 0.6;
+  text-decoration: line-through;
+  background-color: transparent;
+}
+
+.taskLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.taskTitle {
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emptySlotHint {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  opacity: 0;
+  cursor: pointer;
+  padding-left: 4px;
+  transition: opacity var(--transition-fast);
+}
+
+.slotContent:hover .emptySlotHint {
+  opacity: 0.6;
+}
+
+.currentTimeLine {
+  position: absolute;
+  left: 48px;
+  right: 0;
+  height: 2px;
+  background-color: var(--danger, #ef4444);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.currentTimeDot {
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--danger, #ef4444);
+}

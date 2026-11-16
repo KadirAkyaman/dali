@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Sparkles } from 'lucide-react';
+import { DynamicIcon } from '../ui/DynamicIcon';
 import styles from './RoutineTemplatesModal.module.css';
 
 export interface RoutineTemplate {
@@ -15,33 +16,33 @@ const TEMPLATES: RoutineTemplate[] = [
     id: 'morning',
     name: 'Güne Başlangıç Rutini',
     description: 'Zihni tazelemek ve güne berrak başlamak için 3 basit adım.',
-    icon: '☀️',
+    icon: 'sun',
     tasks: [
-      { title: 'Büyük bir bardak su iç ve hafif esne', icon: '🏃', priority: 'medium' },
-      { title: 'Bugünün en kritik 3 görevini belirle', icon: '🎯', priority: 'high' },
-      { title: '15 dakika zihnini dinlendir veya kitap oku', icon: '📚', priority: 'low' },
+      { title: 'Büyük bir bardak su iç ve hafif esne', icon: 'water', priority: 'medium' },
+      { title: 'Bugünün en kritik 3 görevini belirle', icon: 'target', priority: 'high' },
+      { title: '15 dakika zihnini dinlendir veya kitap oku', icon: 'book', priority: 'low' },
     ],
   },
   {
     id: 'deep-work',
     name: 'Derin Odaklanma Başlangıcı',
     description: 'Dikkat dağınıklığını sıfırlayıp derin çalışmaya geçiş paketi.',
-    icon: '⚡',
+    icon: 'zap',
     tasks: [
-      { title: 'Bildirimleri kapat ve çalışma masasını toparla', icon: '🌿', priority: 'medium' },
-      { title: 'En zorlu ana göreve 45 dk kesintisiz odaklan', icon: '🎯', priority: 'high' },
-      { title: 'Kısa mola ver ve gözlerini dinlendir', icon: '☕', priority: 'low' },
+      { title: 'Bildirimleri kapat ve çalışma masasını toparla', icon: 'leaf', priority: 'medium' },
+      { title: 'En zorlu ana göreve 45 dk kesintisiz odaklan', icon: 'target', priority: 'high' },
+      { title: 'Kısa mola ver ve gözlerini dinlendir', icon: 'coffee', priority: 'low' },
     ],
   },
   {
     id: 'wrap-up',
     name: 'Günün Sakin Kapanışı',
     description: 'Yapılanları gözden geçirip yarın için zihni serbest bırak.',
-    icon: '🌙',
+    icon: 'moon',
     tasks: [
-      { title: 'Tamamlanan görevleri kutla ve kalanları incele', icon: '⭐', priority: 'medium' },
-      { title: 'Açık kalan tarayıcı sekmelerini ve notları temizle', icon: '💻', priority: 'low' },
-      { title: 'Yarın için 1 ana odak notu bırak', icon: '💡', priority: 'high' },
+      { title: 'Tamamlanan görevleri kutla ve kalanları incele', icon: 'star', priority: 'medium' },
+      { title: 'Açık kalan tarayıcı sekmelerini ve notları temizle', icon: 'code', priority: 'low' },
+      { title: 'Yarın için 1 ana odak notu bırak', icon: 'idea', priority: 'high' },
     ],
   },
 ];
@@ -82,7 +83,7 @@ export const RoutineTemplatesModal: React.FC<RoutineTemplatesModalProps> = ({
             <div key={tmpl.id} className={styles.templateCard}>
               <div className={styles.cardHeader}>
                 <span className={styles.cardTitle}>
-                  <span>{tmpl.icon}</span>
+                  <DynamicIcon name={tmpl.icon} size={15} />
                   <span>{tmpl.name}</span>
                 </span>
                 <button
@@ -97,7 +98,7 @@ export const RoutineTemplatesModal: React.FC<RoutineTemplatesModalProps> = ({
               <div className={styles.taskList}>
                 {tmpl.tasks.map((t, idx) => (
                   <div key={idx} className={styles.taskItemPreview}>
-                    <span>{t.icon}</span>
+                    <DynamicIcon name={t.icon} size={13} />
                     <span>{t.title}</span>
                   </div>
                 ))}

@@ -19,6 +19,7 @@ import { ModernRepeatSelect } from '../ui/ModernRepeatSelect';
 import { ModernIconPicker } from '../ui/ModernIconPicker';
 import { ModernPrioritySelect } from '../ui/ModernPrioritySelect';
 import { SubtaskList } from './SubtaskList';
+import { DynamicIcon } from '../ui/DynamicIcon';
 import { LocalRecurrenceRepository } from '../../repositories/localRepository';
 import styles from './TaskItem.module.css';
 
@@ -322,7 +323,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
                 {task.icon && (
                   <span className={styles.taskIconBadge} title="Kategori">
-                    {task.icon}
+                    <DynamicIcon name={task.icon} size={12} />
                   </span>
                 )}
 

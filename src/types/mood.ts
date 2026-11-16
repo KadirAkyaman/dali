@@ -2,14 +2,14 @@ export type MoodId = 'calm' | 'energetic' | 'focused' | 'resting' | 'tired';
 
 export interface MoodOption {
   id: MoodId;
-  emoji: string;
+  icon: string;
   label: string;
 }
 
 export const MOOD_OPTIONS: MoodOption[] = [
-  { id: 'calm', emoji: '🌿', label: 'Sakin' },
-  { id: 'energetic', emoji: '⚡', label: 'Enerjik' },
-  { id: 'focused', emoji: '🎯', label: 'Odaklı' },
-  { id: 'resting', emoji: '☕', label: 'Dinlenmede' },
-  { id: 'tired', emoji: '☁️', label: 'Yorgun' },
+  { id: 'calm', icon: 'leaf', label: 'Sakin' },
+  { id: 'energetic', icon: 'zap', label: 'Enerjik' },
+  { id: 'focused', icon: 'target', label: 'Odaklı' },
+  { id: 'resting', icon: 'coffee', label: 'Dinlenmede' },
+  { id: 'tired', icon: 'cloud', label: 'Yorgun' },
 ];

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, CheckCircle, Sparkles, Timer } from 'lucide-react';
+import { ShieldAlert, CheckCircle, Sparkles, Timer, List, Clock } from 'lucide-react';
 import { useTasks } from '../../app/providers/TaskProvider';
 import { Task, TaskPriority } from '../../types/task';
 import { RecurrenceFrequency } from '../../types/recurrence';
@@ -10,6 +10,7 @@ import { DailyPulseCard } from '../../components/mood/DailyPulseCard';
 import { WeeklyStatsCard } from '../../components/stats/WeeklyStatsCard';
 import { RoutineTemplatesModal } from '../../components/tasks/RoutineTemplatesModal';
 import { FocusTimerModal } from '../../components/focus/FocusTimerModal';
+import { TimeboxView } from './TimeboxView';
 import { formatDisplayDate, isTodayDate, isPastDate } from '../../domain/date/dateService';
 import { QuoteService, Quote } from '../../domain/quote/quoteService';
 import styles from './TodayView.module.css';
@@ -28,6 +29,8 @@ export const TodayView: React.FC = () => {
     reorderTasks,
     snoozeTaskToTomorrow,
   } = useTasks();
+
+  const [viewMode, setViewMode] = useState<'list' | 'timebox'>('list');
 
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -137,6 +140,28 @@ export const TodayView: React.FC = () => {
         <div className={styles.dateRow}>
           <h1 className={styles.title}>{formatDisplayDate(selectedDate)}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* 2 Mod Switcher: Liste vs Zaman Çizelgesi */}
+            <div className={styles.viewModePillGroup}>
+              <button
+                type="button"
+                className={`${styles.viewModeBtn} ${viewMode === 'list' ? styles.viewModeBtnActive : ''}`}
+                onClick={() => setViewMode('list')}
+                title="Standart Liste Görünümü"
+              >
+                <List size={12} />
+                <span>Liste</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.viewModeBtn} ${viewMode === 'timebox' ? styles.viewModeBtnActive : ''}`}
+                onClick={() => setViewMode('timebox')}
+                title="Saatlik Zaman Çizelgesi (Timebox)"
+              >
+                <Clock size={12} />
+                <span>Çizelge</span>
+              </button>
+            </div>
+
             {!isReadOnly && (
               <>
                 <button
@@ -237,73 +262,94 @@ export const TodayView: React.FC = () => {
       )}
 
       {/* İkon / Kategori Filtreleme Çubuğu */}
-      <TaskFilterBar
-        availableIcons={availableIcons}
-        activeFilter={activeFilter}
-        onFilterChange={setActiveFilter}
-      />
+      {viewMode === 'list' && (
+        <TaskFilterBar
+          availableIcons={availableIcons}
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
+        />
+      )}
 
-      <section className={styles.taskList}>
-        {displayedTasks.map((task, index) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            index={index}
-            totalTasks={displayedTasks.length}
-            isReadOnly={isReadOnly}
-            onToggle={toggleTask}
-            onUpdate={(id, updates) => updateTask(id, updates)}
-            onDelete={deleteTask}
-            onSnooze={snoozeTaskToTomorrow}
-            onStartFocus={(t) => {
-              setFocusTask(t);
-              setIsFocusModalOpen(true);
-            }}
-            onMoveUp={handleMoveUp}
-            onMoveDown={handleMoveDown}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onDragEnd={handleDragEnd}
-            isDragging={draggedIndex === index}
-            isDragOver={dragOverIndex === index}
-          />
-        ))}
-
-        <TaskInput
-          onAddTask={(
-            title: string,
-            reminderAt?: string | null,
-            recurrenceFrequency?: RecurrenceFrequency | null,
-            icon?: string | null,
-            priority?: TaskPriority | null
-          ) =>
+      {viewMode === 'timebox' ? (
+        <TimeboxView
+          tasks={tasks}
+          isToday={isCurrentToday}
+          onToggleTask={toggleTask}
+          onUpdateTask={(id, updates) => updateTask(id, updates)}
+          onAddTaskAtHour={(hourStr) =>
             addTask({
-              title,
-              reminder_at: reminderAt,
-              recurrence_frequency: recurrenceFrequency,
-              icon: icon || null,
-              priority: priority || null,
+              title: 'Yeni Görev',
+              reminder_at: hourStr,
             })
           }
-          isReadOnly={isReadOnly}
+          onStartFocus={(t) => {
+            setFocusTask(t);
+            setIsFocusModalOpen(true);
+          }}
         />
+      ) : (
+        <section className={styles.taskList}>
+          {displayedTasks.map((task, index) => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              index={index}
+              totalTasks={displayedTasks.length}
+              isReadOnly={isReadOnly}
+              onToggle={toggleTask}
+              onUpdate={(id, updates) => updateTask(id, updates)}
+              onDelete={deleteTask}
+              onSnooze={snoozeTaskToTomorrow}
+              onStartFocus={(t) => {
+                setFocusTask(t);
+                setIsFocusModalOpen(true);
+              }}
+              onMoveUp={handleMoveUp}
+              onMoveDown={handleMoveDown}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              onDragEnd={handleDragEnd}
+              isDragging={draggedIndex === index}
+              isDragOver={dragOverIndex === index}
+            />
+          ))}
 
-        {totalCount === 0 && (
-          <div className={styles.emptyState}>
-            {isCurrentToday
-              ? 'Bugün için planın boş. İstersen küçük bir şey ekle.'
-              : 'Bu gün için planlanmış bir görev bulunmuyor.'}
-          </div>
-        )}
+          <TaskInput
+            onAddTask={(
+              title: string,
+              reminderAt?: string | null,
+              recurrenceFrequency?: RecurrenceFrequency | null,
+              icon?: string | null,
+              priority?: TaskPriority | null
+            ) =>
+              addTask({
+                title,
+                reminder_at: reminderAt,
+                recurrence_frequency: recurrenceFrequency,
+                icon: icon || null,
+                priority: priority || null,
+              })
+            }
+            isReadOnly={isReadOnly}
+          />
 
-        {allCompleted && !isPast && (
-          <div className={styles.completedAllMessage}>
-            <CheckCircle size={14} />
-            <span>Tüm görevler tamamlandı. Harika bir gün.</span>
-          </div>
-        )}
-      </section>
+          {totalCount === 0 && (
+            <div className={styles.emptyState}>
+              {isCurrentToday
+                ? 'Bugün için planın boş. İstersen küçük bir şey ekle.'
+                : 'Bu gün için planlanmış bir görev bulunmuyor.'}
+            </div>
+          )}
+
+          {allCompleted && !isPast && (
+            <div className={styles.completedAllMessage}>
+              <CheckCircle size={14} />
+              <span>Tüm görevler tamamlandı. Harika bir gün.</span>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Rutin Şablonları Modalı */}
       <RoutineTemplatesModal

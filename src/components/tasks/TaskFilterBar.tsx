@@ -1,4 +1,5 @@
 import React from 'react';
+import { DynamicIcon } from '../ui/DynamicIcon';
 import styles from './TaskFilterBar.module.css';
 
 interface TaskFilterBarProps {
@@ -30,8 +31,9 @@ export const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
           type="button"
           className={`${styles.pill} ${activeFilter === icon ? styles.pillActive : ''}`}
           onClick={() => onFilterChange(activeFilter === icon ? null : icon)}
+          title={icon}
         >
-          <span>{icon}</span>
+          <DynamicIcon name={icon} size={13} />
         </button>
       ))}
     </div>

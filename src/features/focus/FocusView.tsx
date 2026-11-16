@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Volume2, Sparkles, Check, ChevronDown } from 'lucide-react';
+import { Play, Pause, RotateCcw, Volume2, VolumeX, CloudRain, Waves, Sparkles, Check, ChevronDown } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useTasks } from '../../app/providers/TaskProvider';
 import { Task } from '../../types/task';
 import { NotificationService } from '../../services/notificationService';
 import { ambientSound } from '../../services/ambientSoundService';
+import { DynamicIcon } from '../../components/ui/DynamicIcon';
 import styles from './FocusView.module.css';
 
 export const FocusView: React.FC = () => {
@@ -143,7 +144,7 @@ export const FocusView: React.FC = () => {
             <button type="button" className={styles.taskSelector}>
               {selectedTask ? (
                 <>
-                  <span>{selectedTask.icon || '🎯'}</span>
+                  <DynamicIcon name={selectedTask.icon || 'target'} size={14} />
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {selectedTask.title}
                   </span>
@@ -256,6 +257,7 @@ export const FocusView: React.FC = () => {
             className={`${styles.soundPill} ${soundMode === 'off' ? styles.soundPillActive : ''}`}
             onClick={() => handleSoundChange('off')}
           >
+            <VolumeX size={12} style={{ display: 'inline', marginRight: 4 }} />
             Sessiz
           </button>
           <button
@@ -263,14 +265,16 @@ export const FocusView: React.FC = () => {
             className={`${styles.soundPill} ${soundMode === 'rain' ? styles.soundPillActive : ''}`}
             onClick={() => handleSoundChange('rain')}
           >
-            🌧️ Yağmur
+            <CloudRain size={12} style={{ display: 'inline', marginRight: 4 }} />
+            Yağmur
           </button>
           <button
             type="button"
             className={`${styles.soundPill} ${soundMode === 'waves' ? styles.soundPillActive : ''}`}
             onClick={() => handleSoundChange('waves')}
           >
-            🌊 Dalgalar
+            <Waves size={12} style={{ display: 'inline', marginRight: 4 }} />
+            Okyanus
           </button>
         </div>
       </div>

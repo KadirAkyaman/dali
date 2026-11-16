@@ -66,7 +66,7 @@ $headers = @{
 $releaseBody = @{
     tag_name = "v$Version"
     name = "Dali v$Version"
-    body = "### ✨ Dali v$Version Yenilikleri`n`n- 🔥 **Alışkanlıklar ve Zincir (Habit Streaks)**: Günlük mikro-ritüeller (Su, Kitap, Yürüyüş, Meditasyon), 7 günlük interaktif dot zinciri, kesintisiz gün sayacı (streak) ve en iyi rekor rozetleri.`n- 📝 **Not Defteri ve Karalama (Daily Scratchpad)**: Günün notu ve kalıcı hızlı karalama alanı, otomatik kaydetme, saat damgası ve tek tıkla **Satırları Göreve Dönüştürme**.`n- ⏱️ **Bağımsız Pomodoro ve Odak Sayfası**: Sol menüden doğrudan erişilebilen odak çalışma alanı, görev seçimi ve seans takibi.`n- 🌿 **Doğal Ortam Sesleri (Offline)**: Web Audio API ile sıfır harici dosya bağımlılığıyla üretilen Rahatlatıcı Yağmur ve Okyanus Dalgaları.`n- 📊 **Haftalık Ritim ve İstatistikler**: Bugün sayfasının en üstüne taşındı.`n- 💫 **Yenilenen Günün Ritmi ve Enerjisi (Daily Pulse)**: 5 farklı durum için özel rehberlik.`n- 🪟 **Ultra-Mini Yüzen Bar Modu**: Widget başlığında doğrudan görünen mini bar butonuyla tek tıkla kompakt tek görev çubuğuna dönüşme.`n- 🚀 **Performans ve Hata İyileştirmeleri**."
+    body = "### ✨ Dali v$Version Yenilikleri`n`n- 🎨 **Vektör İkon Dönüşümü**: Proje genelindeki tüm emojiler kaldırılarak modern ve minimalist Lucide vektör ikon paketi entegre edildi.`n- ⚡ **Spotlight / Raycast Hızlı Yakalama (Ctrl + Space)**: Arka planı hafifçe karartan, modern tarih seçicili ve Enter ile anında görevi planlayıcıya atan küresel yakalama çubuğu.`n- ⏱️ **Timeboxing / Zaman Çizelgesi Modu**: Bugün sayfasında sağ üstten tek tıkla liste veya saatlik çizelge görünümü arasında geçiş imkanı ve anlık saat çizgisi.`n- 📊 **Derin Verimlilik ve 52 Haftalık Isı Haritası (Year in Pixels)**: GitHub katkı grafiği tarzı yıllık verimlilik ısı haritası, kesintisiz seriler ve odak metrikleri.`n- 🔥 **Alışkanlıklar Zinciri ve Zen Not Defteri İyileştirmeleri**."
     draft = $false
     prerelease = $false
 }
@@ -82,7 +82,7 @@ $sig = [System.IO.File]::ReadAllText((Resolve-Path $sigPath)).Trim()
 
 $latestJson = @{
     version = $Version
-    notes = "Dali v${Version} - Aliskanliklar Zinciri, Not Defteri, Pomodoro Odak Sayfasi ve Ultra-Mini Bar Modu."
+    notes = "Dali v${Version} - Spotlight Hizli Yakalama (Ctrl+Space), Timeboxing Cizelgesi, Yillik Isi Haritasi ve Vektor Ikonlar."
     pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     platforms = @{
         "windows-x86_64" = @{
