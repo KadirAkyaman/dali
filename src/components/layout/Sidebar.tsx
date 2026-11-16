@@ -1,8 +1,8 @@
 import React from 'react';
-import { CalendarCheck2, CalendarDays, CheckCircle2, Settings2, Minimize2 } from 'lucide-react';
+import { CalendarCheck2, Timer, CalendarDays, CheckCircle2, Settings2, Minimize2 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
-export type ActiveTab = 'today' | 'calendar' | 'completed' | 'settings';
+export type ActiveTab = 'today' | 'focus' | 'calendar' | 'completed' | 'settings';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -22,6 +22,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onTogg
           >
             <CalendarCheck2 className={styles.navItemIcon} />
             <span>Bugün</span>
+          </button>
+
+          <button
+            className={`${styles.navItem} ${activeTab === 'focus' ? styles.navItemActive : ''}`}
+            onClick={() => onTabChange('focus')}
+            aria-label="Odaklan"
+          >
+            <Timer className={styles.navItemIcon} />
+            <span>Odaklan</span>
           </button>
 
           <button

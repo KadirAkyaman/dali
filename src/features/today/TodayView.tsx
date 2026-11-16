@@ -6,7 +6,7 @@ import { RecurrenceFrequency } from '../../types/recurrence';
 import { TaskItem } from '../../components/tasks/TaskItem';
 import { TaskInput } from '../../components/tasks/TaskInput';
 import { TaskFilterBar } from '../../components/tasks/TaskFilterBar';
-import { DailyMoodBanner } from '../../components/mood/DailyMoodBanner';
+import { DailyPulseCard } from '../../components/mood/DailyPulseCard';
 import { WeeklyStatsCard } from '../../components/stats/WeeklyStatsCard';
 import { RoutineTemplatesModal } from '../../components/tasks/RoutineTemplatesModal';
 import { FocusTimerModal } from '../../components/focus/FocusTimerModal';
@@ -176,7 +176,7 @@ export const TodayView: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+        <div>
           <span className={styles.subTitle}>
             {isCurrentToday
               ? 'Bugüne yer aç.'
@@ -184,9 +184,6 @@ export const TodayView: React.FC = () => {
               ? 'Geçmiş gün arşivi.'
               : 'Gelecek günlerin planı.'}
           </span>
-
-          {/* Günün Hissi / Mood Banner */}
-          <DailyMoodBanner dateStr={selectedDate} />
         </div>
 
         {isPast && (
@@ -215,6 +212,12 @@ export const TodayView: React.FC = () => {
           </div>
         )}
       </header>
+
+      {/* Haftalık Ritim & İstatistikler (Kullanıcı İsteği: Üstte Konumlandırıldı) */}
+      <WeeklyStatsCard tasks={tasks} todayStr={todayStr} />
+
+      {/* Yenilenen Günün Hissi & Enerjisi Bileşeni */}
+      <DailyPulseCard dateStr={selectedDate} />
 
       {totalCount > 0 && (
         <section className={styles.progressSection}>
@@ -301,9 +304,6 @@ export const TodayView: React.FC = () => {
           </div>
         )}
       </section>
-
-      {/* Haftalık Ritim & İstatistikler */}
-      <WeeklyStatsCard tasks={tasks} todayStr={todayStr} />
 
       {/* Rutin Şablonları Modalı */}
       <RoutineTemplatesModal

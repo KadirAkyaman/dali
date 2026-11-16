@@ -4,6 +4,7 @@ import { TaskProvider, useTasks } from './providers/TaskProvider';
 import { AppLayout } from '../components/layout/AppLayout';
 import { ActiveTab } from '../components/layout/Sidebar';
 import { TodayView } from '../features/today/TodayView';
+import { FocusView } from '../features/focus/FocusView';
 import { CalendarView } from '../features/calendar/CalendarView';
 import { CompletedView } from '../features/completed/CompletedView';
 import { SettingsView } from '../features/settings/SettingsView';
@@ -100,6 +101,7 @@ const DaliApp: React.FC = () => {
       onToggleWidgetMode={handleEnterWidgetMode}
     >
       {activeTab === 'today' && <TodayView />}
+      {activeTab === 'focus' && <FocusView />}
       {activeTab === 'calendar' && (
         <CalendarView onSelectDateAndGoToToday={handleSelectDateFromCalendar} />
       )}

@@ -25,10 +25,11 @@ $tauriConf = Get-Content $tauriConfPath -Raw | ConvertFrom-Json
 $tauriConf.version = $Version
 $tauriConf | ConvertTo-Json -Depth 10 | Set-Content $tauriConfPath
 
-# 3. Cargo.toml güncelle
+# 3. Cargo.toml güncelle (Yalnızca [package] altındaki sürüm)
 $cargoPath = "src-tauri/Cargo.toml"
 $cargoContent = Get-Content $cargoPath -Raw
-$cargoContent = $cargoContent -replace 'version = "[^"]+"', "version = `"$Version`""
+$r = [regex]'(?m)^version\s*=\s*"[^"]+"'
+$cargoContent = $r.Replace($cargoContent, "version = `"$Version`"", 1)
 Set-Content $cargoPath $cargoContent
 
 Write-Host "1. Versiyon numaraları güncellendi." -ForegroundColor Green
@@ -65,7 +66,7 @@ $headers = @{
 $releaseBody = @{
     tag_name = "v$Version"
     name = "Dali v$Version"
-    body = "Dali v$Version otomatik güncelleme paketi."
+    body = "### ✨ Dali v$Version Yenilikleri`n`n- ⏱️ **Bağımsız Pomodoro & Derin Odak Sayfası**: Sol menüden doğrudan erişilebilen odak çalışma alanı, görev seçimi ve seans takibi.`n- 🌿 **Doğal Ortam Sesleri (Offline)**: Web Audio API ile sıfır harici dosya bağımlılığıyla üretilen Rahatlatıcı Yağmur ve Okyanus Dalgaları.`n- 📊 **Haftalık Ritim & İstatistikler**: Bugün sayfasının en üstüne taşınarak anlık haftalık ivme takibi sağlandı.`n- 💫 **Yenilenen Günün Ritmi & Enerjisi (Daily Pulse)**: 5 farklı ruh hali & enerji durumu için özel rehberlik ve motivasyon sözleri.`n- 🪟 **Ultra-Mini Yüzen Bar Modu**: Widget başlığında doğrudan görünen mini bar butonuyla tek tıkla kompakt tek görev çubuğuna dönüşme.`n- 🚀 **Performans ve Hata İyileştirmeleri**."
     draft = $false
     prerelease = $false
 } | ConvertTo-Json
@@ -80,7 +81,7 @@ $sig = [System.IO.File]::ReadAllText((Resolve-Path $sigPath))
 
 $latestJson = @{
     version = $Version
-    notes = "Dali v$Version güncellemesi hazır."
+    notes = "Dali v${Version} - Odak Sayfasi, Ortam Sesleri, Yenilenen Gunun Ritmi ve Ultra-Mini Bar Modu."
     pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     platforms = @{
         "windows-x86_64" = @{

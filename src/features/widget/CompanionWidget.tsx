@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { Maximize2, Plus, Check, X, Pin, SlidersHorizontal } from 'lucide-react';
+import {
+  Maximize2,
+  Minimize2,
+  Plus,
+  Check,
+  X,
+  Pin,
+  SlidersHorizontal,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import * as Popover from '@radix-ui/react-popover';
 import { useTasks } from '../../app/providers/TaskProvider';
 import { useTheme } from '../../app/providers/ThemeProvider';
@@ -12,7 +22,6 @@ interface CompanionWidgetProps {
 }
 
 const WIDGET_SIZES = [
-  { id: 'ultra', label: 'Ultra', width: 280, height: 180 },
   { id: 'small', label: 'Küçük', width: 300, height: 420 },
   { id: 'medium', label: 'Orta', width: 340, height: 500 },
   { id: 'large', label: 'Geniş', width: 420, height: 620 },
@@ -26,6 +35,12 @@ export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull
   const [newTitle, setNewTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [quote, setQuote] = useState<Quote>(() => QuoteService.getDailyQuote(todayStr));
+
+  const [isMiniBar, setIsMiniBar] = useState<boolean>(() => {
+    return localStorage.getItem('dali_widget_is_mini') === 'true';
+  });
+
+  const [miniTaskIndex, setMiniTaskIndex] = useState(0);
 
   const [isPinned, setIsPinned] = useState<boolean>(() => {
     return localStorage.getItem('dali_widget_pinned') === 'true';
@@ -46,6 +61,9 @@ export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull
   const completedCount = todayTasks.filter((t) => t.status === 'completed').length;
   const totalCount = todayTasks.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
+  // Active uncompleted tasks for mini mode
+  const pendingTasks = todayTasks.filter((t) => t.status !== 'completed');
 
   const invokeTauri = async (command: string, args?: Record<string, any>) => {
     try {
@@ -72,10 +90,32 @@ export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull
     await invokeTauri('set_always_on_top', { alwaysOnTop: nextPinned });
   };
 
+  const handleToggleMiniBar = async () => {
+    const nextState = !isMiniBar;
+    setIsMiniBar(nextState);
+    localStorage.setItem('dali_widget_is_mini', String(nextState));
+
+    if (nextState) {
+      // Switch to ultra mini bar (280x115)
+      await invokeTauri('set_widget_size', { width: 280, height: 115 });
+    } else {
+      // Restore standard widget size
+      const currentSizeObj = WIDGET_SIZES.find((s) => s.id === activeSize) || WIDGET_SIZES[1];
+      await invokeTauri('set_widget_size', {
+        width: currentSizeObj.width,
+        height: currentSizeObj.height,
+      });
+    }
+  };
+
   const handleSetSize = async (sizeId: string) => {
     const size = WIDGET_SIZES.find((s) => s.id === sizeId);
     if (!size) return;
     setActiveSize(sizeId);
+    if (isMiniBar) {
+      setIsMiniBar(false);
+      localStorage.setItem('dali_widget_is_mini', 'false');
+    }
     await invokeTauri('set_widget_size', { width: size.width, height: size.height });
   };
 
@@ -109,6 +149,174 @@ export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull
       ? `rgba(32, 33, 31, ${opacity / 100})`
       : `rgba(255, 255, 255, ${opacity / 100})`;
 
+  // ==========================================
+  // ULTRA-MINI BAR MODU RENDER
+  // ==========================================
+  if (isMiniBar) {
+    const currentMiniTask = pendingTasks[miniTaskIndex % (pendingTasks.length || 1)] || null;
+
+    return (
+      <div
+        className={styles.miniBarContainer}
+        style={{
+          backgroundColor: widgetBg,
+        }}
+      >
+        <div className={styles.miniBarHeader} data-tauri-drag-region>
+          <div className={styles.brandGroup}>
+            <div className={styles.brandDot} />
+            <span className={styles.brandText}>dali</span>
+            <span style={{ fontSize: '10px', color: 'var(--text-tertiary)', marginLeft: 2 }}>
+              %{Math.round(progressPercent)}
+            </span>
+          </div>
+
+          <div className={styles.headerControls}>
+            {/* Always on top / Pin */}
+            <button
+              type="button"
+              className={`${styles.controlButton} ${isPinned ? styles.controlButtonActive : ''}`}
+              onClick={handleTogglePin}
+              title={isPinned ? 'Sabitlemeyi kaldır' : 'Her zaman üstte tut'}
+              aria-label="Her zaman üstte tut"
+            >
+              <Pin size={11} style={{ transform: isPinned ? 'rotate(45deg)' : 'none' }} />
+            </button>
+
+            {/* Genişlet (Normal widgete dön) */}
+            <button
+              type="button"
+              className={styles.controlButton}
+              onClick={handleToggleMiniBar}
+              title="Normal Widget Görünümüne Genişlet"
+              aria-label="Normal Widget Görünümüne Genişlet"
+            >
+              <Maximize2 size={11} />
+            </button>
+
+            {/* Kapat */}
+            <button
+              type="button"
+              className={`${styles.controlButton} ${styles.closeButton}`}
+              onClick={handleClose}
+              title="Kapat"
+              aria-label="Kapat"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        </div>
+
+        <div className={styles.miniBarContent}>
+          {currentMiniTask ? (
+            <>
+              <div className={styles.miniBarTaskMain}>
+                <button
+                  type="button"
+                  onClick={() => toggleTask(currentMiniTask.id)}
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '4px',
+                    border: '1.5px solid var(--border-focus)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'transparent',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                  }}
+                  title="Tamamla"
+                  aria-label="Tamamla"
+                >
+                  {currentMiniTask.status === 'completed' && <Check size={10} strokeWidth={2.5} />}
+                </button>
+                {currentMiniTask.priority && (
+                  <span
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: '50%',
+                      flexShrink: 0,
+                      backgroundColor:
+                        currentMiniTask.priority === 'high'
+                          ? '#ef4444'
+                          : currentMiniTask.priority === 'medium'
+                          ? '#f59e0b'
+                          : '#60a5fa',
+                    }}
+                  />
+                )}
+                {currentMiniTask.icon && (
+                  <span style={{ fontSize: '12px', flexShrink: 0 }}>{currentMiniTask.icon}</span>
+                )}
+                <span className={styles.miniBarTaskText} title={currentMiniTask.title}>
+                  {currentMiniTask.title}
+                </span>
+              </div>
+
+              {pendingTasks.length > 1 && (
+                <div className={styles.miniBarNav}>
+                  <button
+                    type="button"
+                    className={styles.miniBarNavBtn}
+                    onClick={() =>
+                      setMiniTaskIndex((prev) => (prev > 0 ? prev - 1 : pendingTasks.length - 1))
+                    }
+                    title="Önceki görev"
+                  >
+                    <ChevronLeft size={11} />
+                  </button>
+                  <span>
+                    {(miniTaskIndex % pendingTasks.length) + 1}/{pendingTasks.length}
+                  </span>
+                  <button
+                    type="button"
+                    className={styles.miniBarNavBtn}
+                    onClick={() => setMiniTaskIndex((prev) => prev + 1)}
+                    title="Sonraki görev"
+                  >
+                    <ChevronRight size={11} />
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div
+              style={{
+                fontSize: '11px',
+                color: 'var(--text-secondary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%',
+              }}
+            >
+              <span>{totalCount > 0 ? 'Tümü tamamlandı! ✨' : 'Planın boş.'}</span>
+              <button
+                type="button"
+                onClick={onExpandToFull}
+                style={{
+                  fontSize: '11px',
+                  color: 'var(--accent)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                }}
+              >
+                Uygulamayı Aç
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // STANDART WIDGET RENDER
+  // ==========================================
   return (
     <div
       className={styles.widgetContainer}
@@ -124,6 +332,17 @@ export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull
           </div>
 
           <div className={styles.headerControls}>
+            {/* Ultra Mini Bar Toggle Button - Kullanıcı İçin Doğrudan Görünür! */}
+            <button
+              type="button"
+              className={styles.controlButton}
+              onClick={handleToggleMiniBar}
+              title="Kompakt Mini Bar Moduna Geç"
+              aria-label="Kompakt Mini Bar Moduna Geç"
+            >
+              <Minimize2 size={12} />
+            </button>
+
             {/* Always on top / Pin */}
             <button
               type="button"
@@ -155,12 +374,20 @@ export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull
                   <div className={styles.popoverRow}>
                     <span className={styles.popoverLabel}>Boyut</span>
                     <div className={styles.pillGroup}>
+                      <button
+                        type="button"
+                        className={styles.pillButton}
+                        onClick={handleToggleMiniBar}
+                        title="Ultra Kompakt Yüzen Bar"
+                      >
+                        Mini Bar
+                      </button>
                       {WIDGET_SIZES.map((sz) => (
                         <button
                           key={sz.id}
                           type="button"
                           className={`${styles.pillButton} ${
-                            activeSize === sz.id ? styles.pillButtonActive : ''
+                            !isMiniBar && activeSize === sz.id ? styles.pillButtonActive : ''
                           }`}
                           onClick={() => handleSetSize(sz.id)}
                         >
