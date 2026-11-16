@@ -1,0 +1,170 @@
+.container {
+  margin-top: var(--space-3);
+  position: relative;
+}
+
+/* Kapalı / Sakin Tetikleyici Satırı */
+.triggerButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  font-weight: var(--font-regular);
+  transition: all var(--transition-fast);
+  border: 1px dashed var(--border);
+  cursor: pointer;
+  text-align: left;
+}
+
+.triggerButton:hover {
+  background-color: var(--surface);
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+  border-style: solid;
+}
+
+.triggerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.triggerIcon {
+  color: var(--accent);
+  transition: transform var(--transition-fast);
+}
+
+.triggerButton:hover .triggerIcon {
+  transform: rotate(90deg);
+}
+
+.shortcutBadge {
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+  padding: 2px 6px;
+  background-color: var(--surface-subtle);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  font-family: inherit;
+}
+
+/* Açık / Aktif Modern Görev Giriş Kartı */
+.inputCard {
+  background-color: var(--surface);
+  border: 1px solid var(--border-focus);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: all var(--transition-fast);
+  animation: slideDown 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.inputCard:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-popover);
+}
+
+.inputMainRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.dummyCheckbox {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-xs);
+  border: 1.5px dashed var(--border-focus);
+  flex-shrink: 0;
+}
+
+.textInput {
+  flex: 1;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  background: transparent;
+  outline: none;
+  border: none;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+.textInput::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* Alt Aksiyon Çubuğu */
+.actionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.optionsGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.buttonsGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cancelButton {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: var(--radius-xs);
+  transition: all var(--transition-fast);
+}
+
+.cancelButton:hover {
+  background-color: var(--surface-subtle);
+  color: var(--text-primary);
+}
+
+.submitButton {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  background-color: var(--accent);
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: var(--radius-xs);
+  transition: all var(--transition-fast);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+}
+
+.submitButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

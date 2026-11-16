@@ -1,0 +1,50 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Dali",
+  "version": "0.2.0",
+  "identifier": "com.dali.desktop",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Dali",
+        "width": 1000,
+        "height": 720,
+        "minWidth": 280,
+        "minHeight": 360,
+        "resizable": true,
+        "decorations": false,
+        "center": true,
+        "transparent": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "createUpdaterArtifacts": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ0QkNDRTA4QjU3MTcyM0YKUldRL2NuRzFDTTY4UkdkUUNVWEV1bEpoQzF5d3Y3UzdoWVppVjMvc3lOT0RveDJaWU1maVdpWi8K",
+      "endpoints": [
+        "https://github.com/akyaman/dali/releases/latest/download/latest.json"
+      ]
+    }
+  }
+}

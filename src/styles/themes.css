@@ -1,0 +1,77 @@
+/* Light Theme (Default) */
+:root,
+[data-theme='light'] {
+  --app-bg: #F7F7F5;
+  --surface: #FFFFFF;
+  --surface-subtle: #F1F1EF;
+  --surface-hover: #ECECE9;
+  --text-primary: #252624;
+  --text-secondary: #777A75;
+  --text-tertiary: #A1A39E;
+  --border: #E9EAE6;
+  --border-focus: #D4D6CF;
+  --accent: #8C83D8;
+  --accent-hover: #7E74CD;
+  --accent-soft: #F0EDFC;
+  --accent-soft-hover: #E7E2FA;
+  --success: #5D9B7A;
+  --success-soft: #EEF6F1;
+  --warning: #C28D55;
+  --warning-soft: #FAF3EC;
+  --danger: #C66F70;
+  --danger-soft: #FAF0F0;
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-popover: 0 4px 14px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+/* Dark Theme */
+[data-theme='dark'] {
+  --app-bg: #171816;
+  --surface: #20211F;
+  --surface-subtle: #292A27;
+  --surface-hover: #31332F;
+  --text-primary: #F0F0EC;
+  --text-secondary: #A5A79F;
+  --text-tertiary: #777A73;
+  --border: #333530;
+  --border-focus: #474944;
+  --accent: #A69CEB;
+  --accent-hover: #B5ACF0;
+  --accent-soft: #302D43;
+  --accent-soft-hover: #39354F;
+  --success: #82B99A;
+  --success-soft: #23342B;
+  --warning: #D4A36D;
+  --warning-soft: #382F25;
+  --danger: #D98585;
+  --danger-soft: #3A2727;
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-popover: 0 4px 14px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* System Preference Fallback when no data-theme explicitly set */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --app-bg: #171816;
+    --surface: #20211F;
+    --surface-subtle: #292A27;
+    --surface-hover: #31332F;
+    --text-primary: #F0F0EC;
+    --text-secondary: #A5A79F;
+    --text-tertiary: #777A73;
+    --border: #333530;
+    --border-focus: #474944;
+    --accent: #A69CEB;
+    --accent-hover: #B5ACF0;
+    --accent-soft: #302D43;
+    --accent-soft-hover: #39354F;
+    --success: #82B99A;
+    --success-soft: #23342B;
+    --warning: #D4A36D;
+    --warning-soft: #382F25;
+    --danger: #D98585;
+    --danger-soft: #3A2727;
+    --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);
+    --shadow-popover: 0 4px 14px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+}

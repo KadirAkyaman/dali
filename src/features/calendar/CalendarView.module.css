@@ -1,0 +1,136 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.monthTitle {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.navButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.navButton {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.navButton:hover {
+  background-color: var(--surface-subtle);
+  color: var(--text-primary);
+}
+
+.todayShortcut {
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
+}
+
+.todayShortcut:hover {
+  background-color: var(--surface-subtle);
+  color: var(--text-primary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-1);
+}
+
+.weekdayHeader {
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--text-tertiary);
+  padding: var(--space-2) 0;
+}
+
+.dayCell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  background-color: transparent;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  position: relative;
+}
+
+.dayCell:hover:not(.emptyCell) {
+  background-color: var(--surface-subtle);
+}
+
+.emptyCell {
+  cursor: default;
+  opacity: 0.2;
+}
+
+.pastDay {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.isToday {
+  color: var(--accent);
+  font-weight: var(--font-semibold);
+}
+
+.isSelected {
+  background-color: var(--accent-soft) !important;
+  color: var(--accent);
+  font-weight: var(--font-semibold);
+}
+
+.taskIndicator {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background-color: var(--accent);
+  margin-top: 2px;
+}
+
+.taskIndicatorDone {
+  background-color: var(--success);
+}
+
+.selectedDayDetails {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.selectedDayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
