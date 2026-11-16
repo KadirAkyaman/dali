@@ -1,4 +1,16 @@
-export type ThemeMode = 'system' | 'light' | 'dark' | 'sage' | 'slate' | 'peach' | 'mocha';
+export type ThemeMode =
+  | 'system'
+  | 'light'
+  | 'dark'
+  | 'oled'
+  | 'midnight'
+  | 'forest'
+  | 'amethyst'
+  | 'espresso'
+  | 'sage'
+  | 'slate'
+  | 'peach'
+  | 'mocha';
 
 export interface AppSettings {
   theme: ThemeMode;
@@ -13,6 +25,13 @@ export interface AppSettings {
   time_format: '24h' | '12h';
   launch_on_startup: boolean; // Windows başlangıcında otomatik başlatma
   last_active_date: string;  // YYYY-MM-DD
+
+  // Masaüstü Mini Widget Ayarları
+  widget_opacity: number; // 20 - 100
+  widget_always_on_top: boolean;
+  widget_size: 'compact' | 'standard' | 'large';
+  widget_show_routines: boolean;
+  widget_only_pending: boolean;
 }
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
@@ -28,4 +47,11 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   time_format: '24h',
   launch_on_startup: false,
   last_active_date: '',
+
+  // Varsayılan Widget Değerleri
+  widget_opacity: 96,
+  widget_always_on_top: true,
+  widget_size: 'standard',
+  widget_show_routines: true,
+  widget_only_pending: false,
 };

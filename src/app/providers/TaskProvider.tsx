@@ -4,7 +4,7 @@ import { TaskService } from '../../domain/task/taskService';
 import { RolloverService } from '../../domain/rollover/rolloverService';
 import { ReminderService } from '../../domain/reminder/reminderService';
 import { RecurrenceService } from '../../domain/recurrence/recurrenceService';
-import { DayRoutine } from '../../types/routine';
+import { DayRoutine, RoutineTaskItem } from '../../types/routine';
 import {
   LocalTaskRepository,
   LocalTaskEventRepository,
@@ -85,6 +85,9 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (matchingDay && matchingDay.tasks.length > 0) {
             const currentExisting = await taskService.getTasksForDate(date);
             const existingTitles = new Set(currentExisting.map((t) => t.title.trim().toLowerCase()));
+            let routinesModified = false;
+            const remainingTasks: RoutineTaskItem[] = [];
+
             for (const t of matchingDay.tasks) {
               if (!existingTitles.has(t.title.trim().toLowerCase())) {
                 await taskService.createTask(
@@ -98,6 +101,20 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   currentToday
                 );
               }
+
+              // Tek seferlik rutinler günü gelip aktarıldıktan sonra şablondan silinir
+              if (t.repeatWeekly === false) {
+                routinesModified = true;
+              } else {
+                remainingTasks.push(t);
+              }
+            }
+
+            if (routinesModified) {
+              const nextRoutines = routinesList.map((r) =>
+                r.dayNumber === dayNumber ? { ...r, tasks: remainingTasks } : r
+              );
+              localStorage.setItem('dali_weekly_routines', JSON.stringify(nextRoutines));
             }
           }
         }

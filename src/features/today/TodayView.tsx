@@ -6,8 +6,6 @@ import { RecurrenceFrequency } from '../../types/recurrence';
 import { TaskItem } from '../../components/tasks/TaskItem';
 import { TaskInput } from '../../components/tasks/TaskInput';
 import { TaskFilterBar } from '../../components/tasks/TaskFilterBar';
-import { DailyPulseCard } from '../../components/mood/DailyPulseCard';
-import { WeeklyStatsCard } from '../../components/stats/WeeklyStatsCard';
 import { RoutineTemplatesModal } from '../../components/tasks/RoutineTemplatesModal';
 import { FocusTimerModal } from '../../components/focus/FocusTimerModal';
 import { TimeboxView } from './TimeboxView';
@@ -223,12 +221,6 @@ export const TodayView: React.FC = () => {
           </div>
         )}
       </header>
-
-      {/* Haftalık Ritim & İstatistikler (Kullanıcı İsteği: Üstte Konumlandırıldı) */}
-      <WeeklyStatsCard tasks={tasks} todayStr={todayStr} />
-
-      {/* Yenilenen Günün Hissi & Enerjisi Bileşeni */}
-      <DailyPulseCard dateStr={selectedDate} />
 
       {totalCount > 0 && (
         <section className={styles.progressSection}>

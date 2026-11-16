@@ -6,6 +6,7 @@ export interface RoutineTaskItem {
   reminder_at?: string | null;
   icon?: string | null;
   priority?: TaskPriority | null;
+  repeatWeekly?: boolean; // true: Her hafta tekrar eder (kalıcı şablon), false: Günü gelince aktar ve sil (tek seferlik)
 }
 
 export interface DayRoutine {

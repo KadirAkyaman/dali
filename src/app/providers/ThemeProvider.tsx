@@ -2,9 +2,22 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ThemeMode } from '../../types/settings';
 import { LocalSettingsRepository } from '../../repositories/localRepository';
 
+export type ResolvedTheme =
+  | 'light'
+  | 'dark'
+  | 'oled'
+  | 'midnight'
+  | 'forest'
+  | 'amethyst'
+  | 'espresso'
+  | 'sage'
+  | 'slate'
+  | 'peach'
+  | 'mocha';
+
 interface ThemeContextType {
   theme: ThemeMode;
-  resolvedTheme: 'light' | 'dark' | 'sage' | 'slate' | 'peach' | 'mocha';
+  resolvedTheme: ResolvedTheme;
   setTheme: (theme: ThemeMode) => Promise<void>;
 }
 
@@ -37,8 +50,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
-  const resolvedTheme: 'light' | 'dark' | 'sage' | 'slate' | 'peach' | 'mocha' =
-    theme === 'system' ? (systemIsDark ? 'dark' : 'light') : theme;
+  const resolvedTheme: ResolvedTheme =
+    theme === 'system' ? (systemIsDark ? 'dark' : 'light') : (theme as ResolvedTheme);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', resolvedTheme);

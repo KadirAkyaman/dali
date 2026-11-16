@@ -114,15 +114,20 @@ export const SettingsView: React.FC = () => {
     e.target.value = '';
   };
 
-  const themeLabels: Record<ThemeMode, string> = {
-    system: 'Sistem',
-    light: 'Leylak',
-    dark: 'Koyu',
-    sage: 'Adaçayı',
-    slate: 'Nordic Mavi',
-    peach: 'Şeftali',
-    mocha: 'Kahve',
-  };
+  const THEME_OPTIONS: { id: ThemeMode; label: string; bg: string; accent: string; isDark: boolean }[] = [
+    { id: 'dark', label: 'Klasik Koyu', bg: '#171816', accent: '#A69CEB', isDark: true },
+    { id: 'oled', label: 'Saf OLED', bg: '#000000', accent: '#818CF8', isDark: true },
+    { id: 'midnight', label: 'Gece Mavisi', bg: '#0B0F19', accent: '#38BDF8', isDark: true },
+    { id: 'forest', label: 'Zümrüt Ormanı', bg: '#08120C', accent: '#10B981', isDark: true },
+    { id: 'amethyst', label: 'Ametist Moru', bg: '#0E0A19', accent: '#C084FC', isDark: true },
+    { id: 'espresso', label: 'Sıcak Espresso', bg: '#14100D', accent: '#D97706', isDark: true },
+    { id: 'light', label: 'Minimalist Açık', bg: '#F7F7F5', accent: '#8C83D8', isDark: false },
+    { id: 'sage', label: 'Adaçayı Yeşili', bg: '#F4F6F4', accent: '#558B6E', isDark: false },
+    { id: 'slate', label: 'Nordic Mavi', bg: '#F3F5F7', accent: '#4F7296', isDark: false },
+    { id: 'peach', label: 'Şeftali', bg: '#F8F5F3', accent: '#C86D51', isDark: false },
+    { id: 'mocha', label: 'Sıcak Kahve', bg: '#F6F4F2', accent: '#876751', isDark: false },
+    { id: 'system', label: 'Sistem Tercihi', bg: '#252624', accent: '#A69CEB', isDark: false },
+  ];
 
   return (
     <div className={styles.container}>
@@ -133,31 +138,173 @@ export const SettingsView: React.FC = () => {
         </span>
       </header>
 
-      {/* Görünüm */}
+      {/* Görünüm ve Renk Temaları */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Görünüm</h2>
+        <div className={styles.labelCol} style={{ marginBottom: 4 }}>
+          <span className={styles.label}>Tema Koleksiyonu ({THEME_OPTIONS.length} Tema)</span>
+          <span className={styles.description}>
+            Gözünü yormayan karanlık OLED, gece mavisi, orman yeşili veya açık çalışma ortamları arasından seçim yap.
+          </span>
+        </div>
+
+        <div className={styles.themeGrid}>
+          {THEME_OPTIONS.map((item) => {
+            const isSelected = theme === item.id;
+            return (
+              <div
+                key={item.id}
+                className={`${styles.themeCard} ${isSelected ? styles.themeCardActive : ''}`}
+                onClick={() => setTheme(item.id)}
+                title={`${item.label} (${item.isDark ? 'Karanlık Mod' : 'Açık Mod'})`}
+              >
+                <div
+                  className={styles.themeSwatch}
+                  style={{ background: item.bg }}
+                >
+                  <span
+                    className={styles.themeSwatchDot}
+                    style={{ backgroundColor: item.accent }}
+                  />
+                </div>
+                <span className={styles.themeLabel}>{item.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Masaüstü Mini Widget Ayarları */}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Masaüstü Mini Widget Ayarları</h2>
+
         <div className={styles.row}>
           <div className={styles.labelCol}>
-            <span className={styles.label}>Tema Tercihi</span>
+            <span className={styles.label}>Widget Opaklığı (Saydamlık Çubuğu)</span>
             <span className={styles.description}>
-              Açık, koyu veya Windows sistem ayarını takip et.
+              Masaüstünde açıkken widget penceresinin şeffaflık seviyesini ayarlar (%20 - %100).
             </span>
           </div>
 
-          <div className={styles.segmentedControl} style={{ flexWrap: 'wrap', maxWidth: '360px' }}>
-            {(['system', 'light', 'dark', 'sage', 'slate', 'peach', 'mocha'] as ThemeMode[]).map((mode) => (
+          <div className={styles.sliderRow}>
+            <input
+              type="range"
+              min="20"
+              max="100"
+              value={settings?.widget_opacity ?? 96}
+              onChange={async (e) => {
+                const val = parseInt(e.target.value, 10);
+                const updated = await settingsRepo.updateSettings({ widget_opacity: val });
+                setSettings(updated);
+                localStorage.setItem('dali_widget_opacity', String(val));
+              }}
+              className={styles.rangeSlider}
+            />
+            <span className={styles.sliderBadge}>%{settings?.widget_opacity ?? 96}</span>
+          </div>
+        </div>
+
+        <div className={styles.row}>
+          <div className={styles.labelCol}>
+            <span className={styles.label}>Her Zaman Üstte Kal</span>
+            <span className={styles.description}>
+              Mini widget diğer çalışma pencerelerinin ve uygulamaların üzerinde sabit kalır.
+            </span>
+          </div>
+
+          <button
+            type="button"
+            className={`${styles.toggleSwitch} ${
+              settings?.widget_always_on_top ? styles.toggleSwitchChecked : ''
+            }`}
+            onClick={async () => {
+              if (!settings) return;
+              const val = !settings.widget_always_on_top;
+              const updated = await settingsRepo.updateSettings({ widget_always_on_top: val });
+              setSettings(updated);
+              localStorage.setItem('dali_widget_pinned', String(val));
+            }}
+            aria-label="Her zaman üstte kal ayarını aç veya kapat"
+          >
+            <div className={styles.toggleThumb} />
+          </button>
+        </div>
+
+        <div className={styles.row}>
+          <div className={styles.labelCol}>
+            <span className={styles.label}>Varsayılan Widget Boyutu</span>
+            <span className={styles.description}>
+              Masaüstü widget açıldığında tercih edilen başlangıç boyutu.
+            </span>
+          </div>
+
+          <div className={styles.segmentedControl}>
+            {(['compact', 'standard', 'large'] as const).map((sz) => (
               <button
-                key={mode}
+                key={sz}
                 type="button"
                 className={`${styles.segmentButton} ${
-                  theme === mode ? styles.segmentButtonActive : ''
+                  (settings?.widget_size || 'standard') === sz ? styles.segmentButtonActive : ''
                 }`}
-                onClick={() => setTheme(mode)}
+                onClick={async () => {
+                  const updated = await settingsRepo.updateSettings({ widget_size: sz });
+                  setSettings(updated);
+                }}
               >
-                {themeLabels[mode]}
+                {sz === 'compact' ? 'Kompakt' : sz === 'standard' ? 'Standart' : 'Geniş'}
               </button>
             ))}
           </div>
+        </div>
+
+        <div className={styles.row}>
+          <div className={styles.labelCol}>
+            <span className={styles.label}>Tekrarlanan Rutinleri Göster</span>
+            <span className={styles.description}>
+              Bugüne ait haftalık rutinleri ve tekrarlanan görevleri widget modunda listeler.
+            </span>
+          </div>
+
+          <button
+            type="button"
+            className={`${styles.toggleSwitch} ${
+              settings?.widget_show_routines ? styles.toggleSwitchChecked : ''
+            }`}
+            onClick={async () => {
+              if (!settings) return;
+              const val = !settings.widget_show_routines;
+              const updated = await settingsRepo.updateSettings({ widget_show_routines: val });
+              setSettings(updated);
+            }}
+            aria-label="Widget'ta rutinleri göster ayarını aç veya kapat"
+          >
+            <div className={styles.toggleThumb} />
+          </button>
+        </div>
+
+        <div className={styles.row}>
+          <div className={styles.labelCol}>
+            <span className={styles.label}>Yalnızca Kalan Görevleri Göster</span>
+            <span className={styles.description}>
+              Tamamlanan görevleri widget ekranından gizleyerek dikkat dağınıklığını önler.
+            </span>
+          </div>
+
+          <button
+            type="button"
+            className={`${styles.toggleSwitch} ${
+              settings?.widget_only_pending ? styles.toggleSwitchChecked : ''
+            }`}
+            onClick={async () => {
+              if (!settings) return;
+              const val = !settings.widget_only_pending;
+              const updated = await settingsRepo.updateSettings({ widget_only_pending: val });
+              setSettings(updated);
+            }}
+            aria-label="Widget'ta tamamlananları gizle ayarını aç veya kapat"
+          >
+            <div className={styles.toggleThumb} />
+          </button>
         </div>
       </section>
 
@@ -306,7 +453,7 @@ export const SettingsView: React.FC = () => {
         <h2 className={styles.sectionTitle}>Dali Hakkında ve Güncellemeler</h2>
         <div className={styles.row}>
           <div className={styles.labelCol}>
-            <span className={styles.label}>Sürüm 0.9.1</span>
+            <span className={styles.label}>Sürüm 0.9.2</span>
             <span className={styles.description}>
               Bugüne yer aç. Minimalist kişisel günlük çalışma planlayıcısı.
             </span>

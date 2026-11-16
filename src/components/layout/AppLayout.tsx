@@ -36,7 +36,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           onToggleWidgetMode={onToggleWidgetMode}
         />
         <main className={styles.contentWrapper}>
-          <div className={styles.content}>{children}</div>
+          <div className={styles.content}>
+            {children}
+            <div className={styles.bottomSpacer} />
+          </div>
           {feedback && (
             <div className={styles.toast} onClick={clearFeedback}>
               <span>{feedback.message}</span>

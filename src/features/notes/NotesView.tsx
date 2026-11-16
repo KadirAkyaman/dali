@@ -69,6 +69,20 @@ export const NotesView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isPreview, setIsPreview] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [widgetSize, setWidgetSize] = useState<'compact' | 'standard' | 'large'>(() => {
+    try {
+      return (localStorage.getItem('dali_note_widget_size') as any) || 'standard';
+    } catch {
+      return 'standard';
+    }
+  });
+
+  const handleSetWidgetSize = (size: 'compact' | 'standard' | 'large') => {
+    setWidgetSize(size);
+    try {
+      localStorage.setItem('dali_note_widget_size', size);
+    } catch {}
+  };
   const [copied, setCopied] = useState(false);
   const [isSaved, setIsSaved] = useState(true);
 
@@ -495,14 +509,30 @@ export const NotesView: React.FC = () => {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  className={styles.noteItemDelete}
-                  onClick={(e) => handleDeleteNote(note.id, e)}
-                  title="Notu sil"
-                >
-                  <Trash2 size={12} />
-                </button>
+                <div className={styles.noteItemActions}>
+                  <button
+                    type="button"
+                    className={styles.noteItemExpand}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveNoteId(note.id);
+                      setIsPreview(false);
+                      setIsExpanded(true);
+                    }}
+                    title="Notu Ayrı İncele / Widget Olarak Büyüt"
+                    aria-label="Notu Ayrı İncele"
+                  >
+                    <Maximize2 size={12} />
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.noteItemDelete}
+                    onClick={(e) => handleDeleteNote(note.id, e)}
+                    title="Notu sil"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -531,13 +561,13 @@ export const NotesView: React.FC = () => {
 
                   <button
                     type="button"
-                    className={`${styles.actionPill} ${isExpanded ? styles.actionPillPrimary : ''}`}
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    title={isExpanded ? "Normal görünüme dön [Esc]" : "Notu büyüt / Widget modunda odaklan"}
-                    aria-label="Notu büyüt"
+                    className={`${styles.actionPill} ${styles.actionPillPrimary}`}
+                    onClick={() => setIsExpanded(true)}
+                    title="Notu Ayrı İncele / Boyutu Ayarlanabilir Widget Modu"
+                    aria-label="Ayrı İncele / Büyüt"
                   >
-                    {isExpanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
-                    <span>{isExpanded ? 'Küçült' : 'Büyüt (Widget)'}</span>
+                    <Maximize2 size={12} />
+                    <span>Ayrı İncele (Widget)</span>
                   </button>
                 </div>
               </div>
@@ -826,8 +856,17 @@ export const NotesView: React.FC = () => {
       {/* BÜYÜTÜLMÜŞ WİDGET MODU (PORTAL) */}
       {isExpanded && activeNote && typeof document !== 'undefined' && createPortal(
         <div className={styles.widgetPortalBackdrop} onClick={() => setIsExpanded(false)}>
-          <div className={styles.widgetPortalCard} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.editorHeader} style={{ padding: '20px 28px' }}>
+          <div
+            className={`${styles.widgetPortalCard} ${
+              widgetSize === 'compact'
+                ? styles.widgetSizeCompact
+                : widgetSize === 'large'
+                ? styles.widgetSizeLarge
+                : styles.widgetSizeStandard
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.editorHeader} style={{ padding: '16px 24px' }}>
               <div className={styles.titleDateRow}>
                 <input
                   type="text"
@@ -835,12 +874,40 @@ export const NotesView: React.FC = () => {
                   placeholder={formatDisplayDate(activeNote.dateStr)}
                   value={activeNote.title}
                   onChange={(e) => handleTitleChange(e.target.value)}
-                  style={{ fontSize: '24px' }}
+                  style={{ fontSize: '20px' }}
                 />
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {/* Widget Boyut Seçici */}
+                  <div className={styles.widgetSizePillGroup} title="Widget Boyutunu Ayarla">
+                    <button
+                      type="button"
+                      className={`${styles.widgetSizeBtn} ${widgetSize === 'compact' ? styles.widgetSizeBtnActive : ''}`}
+                      onClick={() => handleSetWidgetSize('compact')}
+                      title="Kompakt Mini Not Widget"
+                    >
+                      Kompakt
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.widgetSizeBtn} ${widgetSize === 'standard' ? styles.widgetSizeBtnActive : ''}`}
+                      onClick={() => handleSetWidgetSize('standard')}
+                      title="Standart Kart Görünümü"
+                    >
+                      Standart
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.widgetSizeBtn} ${widgetSize === 'large' ? styles.widgetSizeBtnActive : ''}`}
+                      onClick={() => handleSetWidgetSize('large')}
+                      title="Tam Ekran Geniş Odak"
+                    >
+                      Tam Ekran
+                    </button>
+                  </div>
+
                   <div className={styles.datePill}>
-                    <Calendar size={13} />
+                    <Calendar size={12} />
                     <span>{formatDisplayDate(activeNote.dateStr)}</span>
                   </div>
 
@@ -850,7 +917,7 @@ export const NotesView: React.FC = () => {
                     onClick={() => setIsExpanded(false)}
                     title="Normal görünüme dön [Esc]"
                   >
-                    <Minimize2 size={13} />
+                    <Minimize2 size={12} />
                     <span>Küçült [Esc]</span>
                   </button>
                 </div>

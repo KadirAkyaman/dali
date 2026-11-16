@@ -1,7 +1,7 @@
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Emitter, LogicalSize, Manager, Size, Window,
+    AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, Position, Size, Window,
 };
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
@@ -73,27 +73,39 @@ fn set_always_on_top(window: Window, always_on_top: bool) -> Result<(), String> 
 
 #[tauri::command]
 fn enter_zen_fullscreen(window: Window) -> Result<(), String> {
-    window.set_fullscreen(true).map_err(|e| e.to_string())
+    if let Ok(Some(monitor)) = window.current_monitor() {
+        let size = monitor.size();
+        let scale = monitor.scale_factor();
+        let logical_width = size.width as f64 / scale;
+        let _ = window.set_fullscreen(false);
+        let _ = window.unmaximize();
+        let _ = window.set_size(Size::Logical(LogicalSize::new(logical_width, 100.0)));
+        let _ = window.set_position(Position::Logical(LogicalPosition::new(0.0, 0.0)));
+        let _ = window.set_always_on_top(true);
+    }
+    Ok(())
 }
 
 #[tauri::command]
 fn exit_zen_fullscreen(window: Window) -> Result<(), String> {
-    window.set_fullscreen(false).map_err(|e| e.to_string())
+    let _ = window.set_always_on_top(false);
+    let _ = window.set_size(Size::Logical(LogicalSize::new(1000.0, 720.0)));
+    let _ = window.center();
+    Ok(())
 }
 
 #[tauri::command]
 fn enter_capture_overlay(window: Window) -> Result<bool, String> {
     let was_max = window.is_maximized().map_err(|e| e.to_string())?;
-    if !was_max {
-        window.maximize().map_err(|e| e.to_string())?;
-    }
+    window.set_fullscreen(true).map_err(|e| e.to_string())?;
     Ok(was_max)
 }
 
 #[tauri::command]
 fn exit_capture_overlay(window: Window, was_maximized: bool) -> Result<(), String> {
-    if !was_maximized {
-        window.unmaximize().map_err(|e| e.to_string())?;
+    window.set_fullscreen(false).map_err(|e| e.to_string())?;
+    if was_maximized {
+        let _ = window.maximize();
     }
     Ok(())
 }

@@ -15,7 +15,10 @@ import { useTasks } from '../../app/providers/TaskProvider';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { formatDisplayDate } from '../../domain/date/dateService';
 import { QuoteService, Quote } from '../../domain/quote/quoteService';
+import { LocalSettingsRepository } from '../../repositories/localRepository';
 import styles from './CompanionWidget.module.css';
+
+const settingsRepo = new LocalSettingsRepository();
 
 interface CompanionWidgetProps {
   onExpandToFull: () => void;
@@ -39,6 +42,15 @@ export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull
       setSelectedDate(todayStr);
     }
     refreshTasks();
+    settingsRepo.getSettings().then((s) => {
+      if (s.widget_opacity) {
+        setOpacity(s.widget_opacity);
+      }
+      if (s.widget_always_on_top !== undefined) {
+        setIsPinned(s.widget_always_on_top);
+        invokeTauri('set_always_on_top', { alwaysOnTop: s.widget_always_on_top });
+      }
+    });
   }, [todayStr, selectedDate, setSelectedDate, refreshTasks]);
 
   const [newTitle, setNewTitle] = useState('');

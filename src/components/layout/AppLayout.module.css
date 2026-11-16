@@ -21,17 +21,26 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  padding-bottom: 48px;
+  scroll-behavior: smooth;
 }
 
 .content {
   width: 100%;
   max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: var(--space-8) var(--space-6) 64px;
+  padding: var(--space-8) var(--space-6) 0;
   display: flex;
   flex-direction: column;
   min-height: 100%;
+  position: relative;
+}
+
+.bottomSpacer {
+  width: 100%;
+  height: 84px;
+  min-height: 84px;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 
 .toast {

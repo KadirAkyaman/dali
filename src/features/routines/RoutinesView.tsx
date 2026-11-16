@@ -45,6 +45,7 @@ export const RoutinesView: React.FC = () => {
   const [newTime, setNewTime] = useState('');
   const [newIcon, setNewIcon] = useState('');
   const [newPriority, setNewPriority] = useState<TaskPriority | ''>('');
+  const [newRepeatWeekly, setNewRepeatWeekly] = useState(true);
   const [syncedToday, setSyncedToday] = useState(false);
 
   // Sync to localStorage
@@ -69,6 +70,7 @@ export const RoutinesView: React.FC = () => {
     setNewTime('');
     setNewIcon('');
     setNewPriority('');
+    setNewRepeatWeekly(true);
   };
 
   const handleSaveRoutineTask = async (dayNum: number, e: React.FormEvent) => {
@@ -82,7 +84,20 @@ export const RoutinesView: React.FC = () => {
       reminder_at: newTime || null,
       icon: newIcon || null,
       priority: (newPriority as TaskPriority) || null,
+      repeatWeekly: newRepeatWeekly,
     };
+
+    // Eğer tek seferlikse ve eklenen gün bugünse doğrudan bugüne ekle, şablona ekleme!
+    if (!newRepeatWeekly && dayNum === currentDayOfWeek) {
+      await addTask({
+        title: newTask.title,
+        reminder_at: newTask.reminder_at || null,
+        icon: newTask.icon || null,
+        priority: newTask.priority || null,
+      });
+      setAddingDayNumber(null);
+      return;
+    }
 
     setRoutines((prev) =>
       prev.map((d) =>
@@ -90,7 +105,7 @@ export const RoutinesView: React.FC = () => {
       )
     );
 
-    // Eğer eklenen gün bugünse, bugünün akışına da doğrudan ekle
+    // Eğer eklenen gün bugünse ve kalıcıysa, bugünün akışına da doğrudan ekle
     if (dayNum === currentDayOfWeek) {
       await addTask({
         title: newTask.title,
@@ -233,6 +248,10 @@ export const RoutinesView: React.FC = () => {
                     </div>
 
                     <div className={styles.taskMeta}>
+                      <span className={styles.repeatBadge}>
+                        {task.repeatWeekly === false ? 'Tek Seferlik' : 'Her Hafta'}
+                      </span>
+
                       {task.reminder_at && (
                         <span className={styles.timeTag}>
                           <Clock size={10} />
@@ -273,6 +292,23 @@ export const RoutinesView: React.FC = () => {
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                   />
+
+                  <div className={styles.repeatOptionRow}>
+                    <label className={styles.repeatOptionLabel}>
+                      <input
+                        type="checkbox"
+                        checked={newRepeatWeekly}
+                        onChange={(e) => setNewRepeatWeekly(e.target.checked)}
+                        className={styles.repeatCheckbox}
+                      />
+                      <span>Her Hafta Tekrarla (Kalıcı Şablon)</span>
+                    </label>
+                    <span className={styles.repeatOptionHint}>
+                      {newRepeatWeekly
+                        ? 'Her hafta bu gün eklenir ve şablonda kalır.'
+                        : 'Günü gelince aktarılır ve buradan silinir.'}
+                    </span>
+                  </div>
 
                   <div className={styles.addControlsRow}>
                     <div className={styles.toolsGroup}>
