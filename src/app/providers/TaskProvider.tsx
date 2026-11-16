@@ -28,7 +28,7 @@ interface TaskContextType {
   feedback: FeedbackAction | null;
   clearFeedback: () => void;
   setFeedback: (msg: string, onUndo?: () => Promise<void>) => void;
-  addTask: (dto: Omit<CreateTaskDTO, 'scheduled_date'>) => Promise<void>;
+  addTask: (dto: Omit<CreateTaskDTO, 'scheduled_date'> & { scheduled_date?: string }) => Promise<void>;
   toggleTask: (id: string) => Promise<void>;
   updateTask: (id: string, updates: UpdateTaskDTO) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
@@ -127,14 +127,15 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isReadOnly = isPastDate(selectedDate, todayStr);
 
-  const addTask = async (dto: Omit<CreateTaskDTO, 'scheduled_date'>) => {
+  const addTask = async (dto: Omit<CreateTaskDTO, 'scheduled_date'> & { scheduled_date?: string }) => {
     try {
+      const targetDate = dto.scheduled_date || selectedDate;
       if (dto.recurrence_frequency) {
         await recurrenceService.createRule(
           {
             title: dto.title,
             frequency: dto.recurrence_frequency,
-            start_date: selectedDate,
+            start_date: targetDate,
             reminder_at: dto.reminder_at || null,
           },
           todayStr
@@ -143,7 +144,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await taskService.createTask(
           {
             ...dto,
-            scheduled_date: selectedDate,
+            scheduled_date: targetDate,
           },
           todayStr
         );

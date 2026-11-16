@@ -66,7 +66,7 @@ $headers = @{
 $releaseBody = @{
     tag_name = "v$Version"
     name = "Dali v$Version"
-    body = "### ✨ Dali v$Version Yenilikleri`n`n- 🎨 **Vektör İkon Dönüşümü**: Proje genelindeki tüm emojiler kaldırılarak modern ve minimalist Lucide vektör ikon paketi entegre edildi.`n- ⚡ **Spotlight / Raycast Hızlı Yakalama (Ctrl + Space)**: Arka planı hafifçe karartan, modern tarih seçicili ve Enter ile anında görevi planlayıcıya atan küresel yakalama çubuğu.`n- ⏱️ **Timeboxing / Zaman Çizelgesi Modu**: Bugün sayfasında sağ üstten tek tıkla liste veya saatlik çizelge görünümü arasında geçiş imkanı ve anlık saat çizgisi.`n- 📊 **Derin Verimlilik ve 52 Haftalık Isı Haritası (Year in Pixels)**: GitHub katkı grafiği tarzı yıllık verimlilik ısı haritası, kesintisiz seriler ve odak metrikleri.`n- 🔥 **Alışkanlıklar Zinciri ve Zen Not Defteri İyileştirmeleri**."
+    body = "### ✨ Dali v$Version Yenilikleri`n`n- 📝 **Notion Tarzı Zengin Markdown Not Defteri**: Sol sütunda aşağıya doğru uzanan not listesi, arama çubuğu ve her gün için ayrı notlar. Başlık girilmediğinde o günün tarihi otomatik başlık olur.`n- ⚡ **Notion Slash (/) Komut Menüsü**: /h1, /h2, /h3, /b (madde), /n (numara listesi), /t (yapılacak kutusu), /q (alıntı bloğu) ve /c (kod) klavye öneri paleti.`n- 👁️ **Canlı Markdown Önizleme ve Göreve Dönüştür**: Notlarınızı tek tıkla şık önizleme moduna geçirme ve satırları bugünün görev listesine aktarma.`n- 🎯 **Spotlight Hızlı Yakalama (Ctrl + Space)**, **Timeboxing Zaman Çizelgesi**, **Yıllık Isı Haritası** ve **Vektör İkon Paketi**."
     draft = $false
     prerelease = $false
 }
@@ -82,7 +82,7 @@ $sig = [System.IO.File]::ReadAllText((Resolve-Path $sigPath)).Trim()
 
 $latestJson = @{
     version = $Version
-    notes = "Dali v${Version} - Spotlight Hizli Yakalama (Ctrl+Space), Timeboxing Cizelgesi, Yillik Isi Haritasi ve Vektor Ikonlar."
+    notes = "Dali v${Version} - Notion Tarzi Zengin Markdown Not Defteri, Sol Not Listesi, Slash Komutlari (/h1, /b, /n, /q) ve Canli Onizleme."
     pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     platforms = @{
         "windows-x86_64" = @{
