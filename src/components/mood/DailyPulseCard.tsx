@@ -66,32 +66,35 @@ export const DailyPulseCard: React.FC<DailyPulseCardProps> = ({ dateStr }) => {
 
   return (
     <div className={styles.card}>
-      <div className={styles.headerRow}>
+      <div className={styles.mainRow}>
         <span className={styles.title}>
-          <Sparkles size={14} /> Günün Ritmi & Hissi
+          <Sparkles size={12} color="var(--accent)" />
+          <span>Günün Ritmi</span>
         </span>
+
+        <div className={styles.pillsRow}>
+          {MOOD_OPTIONS.map((opt) => {
+            const isActive = selectedMood === opt.id;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                className={`${styles.moodPill} ${isActive ? styles.moodPillActive : ''}`}
+                onClick={() => handleSelectMood(opt.id)}
+                title={opt.label}
+              >
+                <DynamicIcon name={opt.icon} size={13} />
+                <span className={styles.label}>{opt.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
         {selectedMood && (
-          <button type="button" className={styles.clearBtn} onClick={handleClear}>
-            Temizle
+          <button type="button" className={styles.clearBtn} onClick={handleClear} title="Seçimi kaldır">
+            ✕ Temizle
           </button>
         )}
-      </div>
-
-      <div className={styles.pillsRow}>
-        {MOOD_OPTIONS.map((opt) => {
-          const isActive = selectedMood === opt.id;
-          return (
-            <button
-              key={opt.id}
-              type="button"
-              className={`${styles.moodPill} ${isActive ? styles.moodPillActive : ''}`}
-              onClick={() => handleSelectMood(opt.id)}
-            >
-              <DynamicIcon name={opt.icon} size={18} />
-              <span className={styles.label}>{opt.label}</span>
-            </button>
-          );
-        })}
       </div>
 
       {selectedMood && (

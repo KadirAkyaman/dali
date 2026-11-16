@@ -14,10 +14,12 @@ import { CompletedView } from '../features/completed/CompletedView';
 import { SettingsView } from '../features/settings/SettingsView';
 import { CompanionWidget } from '../features/widget/CompanionWidget';
 import { QuickCaptureModal } from '../components/capture/QuickCaptureModal';
+import { ZenFocusOverlay } from '../components/focus/ZenFocusOverlay';
 
 const DaliApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('today');
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
+  const [isZenFocusOpen, setIsZenFocusOpen] = useState(false);
   const [isWidgetMode, setIsWidgetMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -56,13 +58,45 @@ const DaliApp: React.FC = () => {
     await invokeTauri('exit_widget_mode');
   }, []);
 
-  // Genel Klavye Kısayolları (Ctrl+Space, Ctrl+1, Ctrl+2, Ctrl+3, Ctrl+,, Ctrl+M)
+  // Tauri Global Shortcut Event Dinleyicileri (Ctrl+Space ve Ctrl+.)
+  useEffect(() => {
+    let unlistenCapture: (() => void) | undefined;
+    let unlistenFocus: (() => void) | undefined;
+
+    const setupTauriEvents = async () => {
+      try {
+        const tauriEvent = (window as any).__TAURI__?.event;
+        if (tauriEvent && typeof tauriEvent.listen === 'function') {
+          unlistenCapture = await tauriEvent.listen('trigger-quick-capture', () => {
+            setIsQuickCaptureOpen(true);
+          });
+          unlistenFocus = await tauriEvent.listen('trigger-zen-focus', () => {
+            setIsZenFocusOpen(true);
+          });
+        }
+      } catch (err) {
+        console.warn('Tauri event dinleyicisi başlatılamadı:', err);
+      }
+    };
+
+    setupTauriEvents();
+
+    return () => {
+      if (unlistenCapture) unlistenCapture();
+      if (unlistenFocus) unlistenFocus();
+    };
+  }, []);
+
+  // Genel Klavye Kısayolları (Ctrl+Space, Ctrl+., Ctrl+1, Ctrl+2, Ctrl+3, Ctrl+,, Ctrl+M)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
         if (e.code === 'Space') {
           e.preventDefault();
           setIsQuickCaptureOpen((prev) => !prev);
+        } else if (e.key === '.' || e.code === 'Period') {
+          e.preventDefault();
+          setIsZenFocusOpen((prev) => !prev);
         } else if (e.key === '1') {
           e.preventDefault();
           handleExitWidgetMode();
@@ -127,6 +161,14 @@ const DaliApp: React.FC = () => {
         todayStr={todayStr}
         onClose={() => setIsQuickCaptureOpen(false)}
         onAddTask={addTask}
+      />
+
+      {/* İmmersif Zen Odak Modu Tam Ekran Saati (Ctrl + .) */}
+      <ZenFocusOverlay
+        isOpen={isZenFocusOpen}
+        onClose={() => setIsZenFocusOpen(false)}
+        onAddTask={addTask}
+        todayStr={todayStr}
       />
     </AppLayout>
   );

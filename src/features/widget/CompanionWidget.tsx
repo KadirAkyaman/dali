@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Maximize2,
   Minimize2,
@@ -30,8 +30,16 @@ const WIDGET_SIZES = [
 const OPACITY_OPTIONS = [50, 70, 85, 95, 100];
 
 export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull }) => {
-  const { todayStr, tasks, toggleTask, addTask } = useTasks();
+  const { todayStr, selectedDate, setSelectedDate, tasks, toggleTask, addTask } = useTasks();
   const { resolvedTheme } = useTheme();
+
+  // Widget moduna geçildiğinde her zaman bugünü garantiye al
+  useEffect(() => {
+    if (selectedDate !== todayStr) {
+      setSelectedDate(todayStr);
+    }
+  }, [todayStr, selectedDate, setSelectedDate]);
+
   const [newTitle, setNewTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [quote, setQuote] = useState<Quote>(() => QuoteService.getDailyQuote(todayStr));

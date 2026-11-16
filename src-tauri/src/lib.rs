@@ -1,8 +1,9 @@
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, LogicalSize, Manager, Size, Window,
+    AppHandle, Emitter, LogicalSize, Manager, Size, Window,
 };
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
 #[tauri::command]
 fn minimize_window(window: Window) -> Result<(), String> {
@@ -81,7 +82,30 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(|app, shortcut, event| {
+                    if event.state() == ShortcutState::Pressed {
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.unminimize();
+                            let _ = window.set_focus();
+                            let shortcut_str = shortcut.to_string().to_lowercase();
+                            if shortcut_str.contains("space") {
+                                let _ = window.emit("trigger-quick-capture", ());
+                            } else if shortcut_str.contains("period") || shortcut_str.contains(".") {
+                                let _ = window.emit("trigger-zen-focus", ());
+                            }
+                        }
+                    }
+                })
+                .build(),
+        )
         .setup(|app| {
+            // Global kısayolları kaydet
+            let _ = app.global_shortcut().register("Ctrl+Space");
+            let _ = app.global_shortcut().register("Ctrl+.");
+            let _ = app.global_shortcut().register("Ctrl+Period");
             // Sistem tepsisi menüsü oluştur
             let show_item = MenuItem::with_id(app, "show", "Dali'yi Aç", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Çıkış", true, None::<&str>)?;

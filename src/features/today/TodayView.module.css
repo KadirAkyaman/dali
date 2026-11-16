@@ -29,18 +29,15 @@
 }
 
 .quoteContainer {
-  margin-top: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  background-color: var(--surface);
-  border-left: 3px solid var(--accent);
-  border-top: 1px solid var(--border);
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  margin-top: var(--space-2);
+  padding: 6px 10px;
+  background: transparent;
+  border-left: 2px solid var(--accent);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: 12px;
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
   transition: all var(--transition-fast);
 }
 
@@ -50,27 +47,28 @@
 
 .quoteTextCol {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .quoteText {
-  font-size: var(--text-sm);
+  font-size: 12px;
   font-style: italic;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   line-height: 1.4;
 }
 
 .quoteAuthor {
-  font-size: var(--text-2xs);
-  color: var(--text-secondary);
+  font-size: 11px;
+  color: var(--text-tertiary);
   font-weight: var(--font-medium);
 }
 
 .quoteRefreshBtn {
   color: var(--text-tertiary);
   cursor: pointer;
-  padding: 4px;
+  padding: 3px;
   border-radius: var(--radius-xs);
   transition: all var(--transition-fast);
 }

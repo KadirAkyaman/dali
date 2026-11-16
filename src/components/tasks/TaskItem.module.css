@@ -33,6 +33,15 @@
   transition: opacity var(--transition-fast);
   margin-left: -4px;
   padding-top: 2px;
+  user-select: none;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragHandle svg {
+  pointer-events: none;
 }
 
 .taskItem:hover .dragHandle {

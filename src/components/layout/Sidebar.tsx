@@ -29,10 +29,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onTogg
           <button
             className={`${styles.navItem} ${activeTab === 'today' ? styles.navItemActive : ''}`}
             onClick={() => onTabChange('today')}
-            aria-label="Bugün"
+            aria-label="Günlük Akış"
           >
             <CalendarCheck2 className={styles.navItemIcon} />
-            <span>Bugün</span>
+            <span>Günlük Akış</span>
+          </button>
+
+          <button
+            className={`${styles.navItem} ${activeTab === 'calendar' ? styles.navItemActive : ''}`}
+            onClick={() => onTabChange('calendar')}
+            aria-label="Takvim"
+          >
+            <CalendarDays className={styles.navItemIcon} />
+            <span>Takvim</span>
           </button>
 
           <button
@@ -78,15 +87,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onTogg
           >
             <BarChart3 className={styles.navItemIcon} />
             <span>İstatistikler</span>
-          </button>
-
-          <button
-            className={`${styles.navItem} ${activeTab === 'calendar' ? styles.navItemActive : ''}`}
-            onClick={() => onTabChange('calendar')}
-            aria-label="Takvim"
-          >
-            <CalendarDays className={styles.navItemIcon} />
-            <span>Takvim</span>
           </button>
 
           <button

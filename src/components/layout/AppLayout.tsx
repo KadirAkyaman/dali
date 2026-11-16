@@ -17,7 +17,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   onToggleWidgetMode,
   children,
 }) => {
-  const { feedback, clearFeedback } = useTasks();
+  const { feedback, clearFeedback, setSelectedDate, todayStr } = useTasks();
+
+  const handleTabChange = (tab: ActiveTab) => {
+    if (tab === 'today') {
+      setSelectedDate(todayStr);
+    }
+    onTabChange(tab);
+  };
 
   return (
     <div className={styles.layout}>
@@ -25,7 +32,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       <div className={styles.bodyWrapper}>
         <Sidebar
           activeTab={activeTab}
-          onTabChange={onTabChange}
+          onTabChange={handleTabChange}
           onToggleWidgetMode={onToggleWidgetMode}
         />
         <main className={styles.contentWrapper}>

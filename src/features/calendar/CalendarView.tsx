@@ -12,8 +12,9 @@ import {
   isSameDay,
   parseISO,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useTasks } from '../../app/providers/TaskProvider';
+import { Task } from '../../types/task';
 import { formatMonthYear, isPastDate, formatDisplayDate } from '../../domain/date/dateService';
 import { LocalTaskRepository } from '../../repositories/localRepository';
 import styles from './CalendarView.module.css';
@@ -26,8 +27,10 @@ interface CalendarViewProps {
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = ({ onSelectDateAndGoToToday }) => {
-  const { todayStr, selectedDate, setSelectedDate } = useTasks();
-  const [currentMonth, setCurrentMonth] = useState<Date>(parseISO(selectedDate));
+  const { todayStr } = useTasks();
+  const [inspectedDate, setInspectedDate] = useState<string>(todayStr);
+  const [inspectedTasks, setInspectedTasks] = useState<Task[]>([]);
+  const [currentMonth, setCurrentMonth] = useState<Date>(parseISO(todayStr));
   const [monthCounts, setMonthCounts] = useState<Record<string, { total: number; completed: number }>>({});
 
   const monthKey = format(currentMonth, 'yyyy-MM');
@@ -36,7 +39,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onSelectDateAndGoToT
     taskRepo.getTaskCountsByMonth(monthKey).then((counts) => {
       setMonthCounts(counts);
     });
-  }, [monthKey, selectedDate]);
+  }, [monthKey, inspectedDate]);
+
+  useEffect(() => {
+    taskRepo.findByDate(inspectedDate).then((tasks) => {
+      setInspectedTasks(tasks);
+    });
+  }, [inspectedDate]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
@@ -47,16 +56,20 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onSelectDateAndGoToT
 
   const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+
   const handleTodayClick = () => {
     const todayDate = parseISO(todayStr);
     setCurrentMonth(todayDate);
-    setSelectedDate(todayStr);
+    setInspectedDate(todayStr);
   };
 
   const handleDayClick = (dayDate: Date) => {
     const dateStr = format(dayDate, 'yyyy-MM-dd');
-    setSelectedDate(dateStr);
-    onSelectDateAndGoToToday(dateStr);
+    setInspectedDate(dateStr);
+  };
+
+  const handleGoToPlan = () => {
+    onSelectDateAndGoToToday(inspectedDate);
   };
 
   return (
@@ -103,7 +116,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onSelectDateAndGoToT
           const dateStr = format(day, 'yyyy-MM-dd');
           const isCurrentMonthDay = isSameMonth(day, currentMonth);
           const isToday = isSameDay(day, parseISO(todayStr));
-          const isSelected = dateStr === selectedDate;
+          const isSelected = dateStr === inspectedDate;
           const isPast = isPastDate(dateStr, todayStr);
           const activity = monthCounts[dateStr];
 
@@ -132,6 +145,60 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onSelectDateAndGoToT
             </button>
           );
         })}
+      </div>
+
+      {/* Seçilen Günün Detayları */}
+      <div className={styles.selectedDayDetails}>
+        <div className={styles.selectedDayHeader}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <CalendarCheck size={16} color="var(--accent)" />
+            <span>{formatDisplayDate(inspectedDate)}</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 'normal' }}>
+              ({inspectedTasks.length} görev)
+            </span>
+          </div>
+
+          <button
+            type="button"
+            className={styles.todayShortcut}
+            onClick={handleGoToPlan}
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent)' }}
+          >
+            <span>Bu Güne Git</span>
+            <ArrowRight size={13} />
+          </button>
+        </div>
+
+        {inspectedTasks.length === 0 ? (
+          <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', fontStyle: 'italic', padding: '8px 0' }}>
+            Bu tarih için kayıtlı görev bulunmuyor.
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '4px' }}>
+            {inspectedTasks.map((t) => (
+              <div
+                key={t.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  backgroundColor: 'var(--surface-subtle)',
+                  fontSize: '13px',
+                  color: t.status === 'completed' ? 'var(--text-tertiary)' : 'var(--text-primary)',
+                  textDecoration: t.status === 'completed' ? 'line-through' : 'none',
+                }}
+              >
+                <CheckCircle2
+                  size={14}
+                  color={t.status === 'completed' ? 'var(--success)' : 'var(--text-tertiary)'}
+                />
+                <span>{t.title}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -18,6 +18,8 @@ import {
   Sparkles,
   Search,
   X,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { useTasks } from '../../app/providers/TaskProvider';
 import { DaliNote, SLASH_COMMANDS, SlashCommand } from '../../types/note';
@@ -65,6 +67,7 @@ export const NotesView: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isPreview, setIsPreview] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSaved, setIsSaved] = useState(true);
 
@@ -77,6 +80,18 @@ export const NotesView: React.FC = () => {
   const [candidateLines, setCandidateLines] = useState<{ text: string; selected: boolean }[]>([]);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Escape to minimize expanded note
+  useEffect(() => {
+    if (!isExpanded) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsExpanded(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isExpanded]);
 
   // Sync to localStorage
   useEffect(() => {
@@ -494,7 +509,7 @@ export const NotesView: React.FC = () => {
       </aside>
 
       {/* SAĞ ALAN: NOTION TARZI EDİTÖR */}
-      <main className={styles.editorArea}>
+      <main className={`${styles.editorArea} ${isExpanded ? styles.editorAreaExpanded : ''}`}>
         {activeNote ? (
           <>
             <div className={styles.editorHeader}>
@@ -507,9 +522,22 @@ export const NotesView: React.FC = () => {
                   onChange={(e) => handleTitleChange(e.target.value)}
                 />
 
-                <div className={styles.datePill} title="Bu notun tarihi">
-                  <Calendar size={12} />
-                  <span>{formatDisplayDate(activeNote.dateStr)}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div className={styles.datePill} title="Bu notun tarihi">
+                    <Calendar size={12} />
+                    <span>{formatDisplayDate(activeNote.dateStr)}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={`${styles.actionPill} ${isExpanded ? styles.actionPillPrimary : ''}`}
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    title={isExpanded ? "Normal görünüme dön [Esc]" : "Notu büyüt / Widget modunda odaklan"}
+                    aria-label="Notu büyüt"
+                  >
+                    {isExpanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+                    <span>{isExpanded ? 'Küçült' : 'Büyüt (Widget)'}</span>
+                  </button>
                 </div>
               </div>
 

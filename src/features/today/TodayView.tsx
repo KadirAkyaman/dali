@@ -288,7 +288,16 @@ export const TodayView: React.FC = () => {
           }}
         />
       ) : (
-        <section className={styles.taskList}>
+        <section
+          className={styles.taskList}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+          }}
+        >
           {displayedTasks.map((task, index) => (
             <TaskItem
               key={task.id}

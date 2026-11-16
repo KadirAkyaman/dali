@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, X, Sparkles } from 'lucide-react';
+import { Calendar, X, Sparkles, CheckSquare, FileText } from 'lucide-react';
 import * as Popover from '@radix-ui/react-popover';
 import { TaskPriority } from '../../types/task';
 import { ModernIconPicker } from '../ui/ModernIconPicker';
@@ -25,6 +25,7 @@ export const QuickCaptureModal: React.FC<QuickCaptureModalProps> = ({
   onClose,
   onAddTask,
 }) => {
+  const [captureMode, setCaptureMode] = useState<'task' | 'note'>('task');
   const [title, setTitle] = useState('');
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [icon, setIcon] = useState<string>('');
@@ -50,6 +51,25 @@ export const QuickCaptureModal: React.FC<QuickCaptureModalProps> = ({
     if (e) e.preventDefault();
     const trimmed = title.trim();
     if (!trimmed) return;
+
+    if (captureMode === 'note') {
+      try {
+        const saved = localStorage.getItem('dali_notes_collection');
+        const existing = saved ? JSON.parse(saved) : [];
+        const newNote = {
+          id: `note-${Date.now()}`,
+          title: trimmed,
+          content: `# ${trimmed}\n\n`,
+          dateStr: selectedDate,
+          updatedAt: Date.now(),
+        };
+        localStorage.setItem('dali_notes_collection', JSON.stringify([newNote, ...existing]));
+      } catch (err) {
+        console.error('Not kaydedilemedi:', err);
+      }
+      onClose();
+      return;
+    }
 
     await onAddTask({
       title: trimmed,
@@ -89,13 +109,37 @@ export const QuickCaptureModal: React.FC<QuickCaptureModalProps> = ({
   return (
     <div className={styles.backdrop} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        {/* Mod Seçici (Görev / Not) */}
+        <div className={styles.modeTabs}>
+          <button
+            type="button"
+            className={`${styles.modeTab} ${captureMode === 'task' ? styles.modeTabActive : ''}`}
+            onClick={() => setCaptureMode('task')}
+          >
+            <CheckSquare size={13} />
+            <span>Görev Ekle</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.modeTab} ${captureMode === 'note' ? styles.modeTabActive : ''}`}
+            onClick={() => setCaptureMode('note')}
+          >
+            <FileText size={13} />
+            <span>Not Ekle</span>
+          </button>
+        </div>
+
         <div className={styles.inputSection}>
           <Sparkles size={18} className={styles.inputIcon} />
           <input
             ref={inputRef}
             type="text"
             className={styles.inputField}
-            placeholder="Yeni bir görev yazın ve [Enter]'a basın..."
+            placeholder={
+              captureMode === 'task'
+                ? "Yeni bir görev yazın ve [Enter]'a basın..."
+                : "Hızlı bir not başlığı yazın ve [Enter]'a basın..."
+            }
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={handleKeyDown}

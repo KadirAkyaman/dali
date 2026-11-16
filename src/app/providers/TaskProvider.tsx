@@ -335,9 +335,9 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const refreshTasks = async () => {
+  const refreshTasks = useCallback(async () => {
     await loadTasksForDate(selectedDate);
-  };
+  }, [loadTasksForDate, selectedDate]);
 
   // Faz 2: Veri Yedekleme Dışa Aktarma
   const exportData = async (): Promise<string> => {

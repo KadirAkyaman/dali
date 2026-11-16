@@ -66,7 +66,7 @@ $headers = @{
 $releaseBody = @{
     tag_name = "v$Version"
     name = "Dali v$Version"
-    body = "### ✨ Dali v$Version Yenilikleri`n`n- 🔁 **Tekrarlı Görevler ve 7 Günlük Haftalık Rutinler**: Sol kenar çubuğuna eklenen Tekrarlananlar modülü ile haftanın 7 günü (Pazartesi .. Pazar) için otomatik tekrarlanacak işler belirleme. O gün geldiğinde planınıza otomatik olarak işlenir.`n- ⚡ **Otomatik ve Anlık Senkronizasyon**: Günlük rutinleri tek tıkla bugüne aktarma veya gün başladığında otomatik yükleme desteği.`n- 📝 **Notion Tarzı Markdown Not Defteri**: Sol sütun not listesi, arama, ve /h1, /b, /n, /q slash komutları.`n- 🎯 **Spotlight Hızlı Yakalama (Ctrl + Space)**, **Timeboxing Zaman Çizelgesi**, **Yıllık Isı Haritası** ve **Vektör İkon Paketi**."
+    body = "### ✨ Dali v$Version Kapsamlı Revizyon ve Yenilikler`n`n- 🌌 **Zen Odak Modu (Ctrl + .)**: Bebas Neue yazı tipiyle gölgeli gerçek zamanlı saat (saniyesiyle birlikte), odaklanma süresi sayacı ve odak modundan çıkmadan kesintisiz görev ekleme (Ctrl + N) desteği.`n- ⚡ **Global Arka Planda Ctrl + Space & Karartma**: Dali arka plandayken veya simge durumundayken sistem genelinde Ctrl + Space ile anında öne gelir; tam ekran koyulaşarak hızlı görev veya not oluşturmanızı sağlar.`n- 📝 **Notlar Büyütme / Widget Odak Modu**: Notların üzerindeki büyütme ikonuna basıldığında not editörü dikkat dağıtmayan tam ekran widget moduna genişler.`n- 🖐️ **Sürükle-Bırak (DND) Kırmızı İmleç Düzeltmesi**: Görev sıralama tutamacı ve liste taşıma imleci Windows ortamında sorunsuz çalışacak şekilde onarıldı.`n- 📅 **Kenar Çubuğu & Takvim İyileştirmesi**: 'Bugün' sekmesi 'Günlük Akış' olarak adlandırıldı, Takvim hemen altına yerleştirildi ve Takvimde gün inceleme Günlük Akış'tan bağımsız hale getirildi.`n- 🪟 **Widget Modunda Tekrarlanan Görevler**: Masaüstü mini widget modunda haftalık rutinler ve tekrarlı görevler eksiksiz listelenir.`n- 🎨 **Kompakt & Profesyonel Arayüz Revizyonları**: Günün Ritmi ve Haftalık İstatistikler bileşenleri çok daha kompakt yatay şeritlere dönüştürüldü, özlü söz alanı editoryal minimalist tasarıma kavuşturuldu ve sayfa altına rahatlatıcı boşluk eklendi."
     draft = $false
     prerelease = $false
 }
@@ -82,7 +82,7 @@ $sig = [System.IO.File]::ReadAllText((Resolve-Path $sigPath)).Trim()
 
 $latestJson = @{
     version = $Version
-    notes = "Dali v${Version} - Tekrarli Gorevler ve 7 Gunluk Rutin Planlayici, Notion Markdown Notlari ve Spotlight Yakalama."
+    notes = "Dali v${Version} - Zen Odak Modu (Ctrl+.), Global Hizli Yakalama (Ctrl+Space), Not Widget Buyutme, DND Duzeltmesi ve Kompakt Gunluk Akis."
     pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     platforms = @{
         "windows-x86_64" = @{

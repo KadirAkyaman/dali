@@ -13,7 +13,7 @@ describe('Dali Uygulaması Uçtan Uca / Entegrasyon Akışı (Türkçe)', () => 
     });
 
     expect(screen.getByText('dali')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Bugün' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Günlük Akış|Bugün/i })).toBeInTheDocument();
     expect(screen.getByText('Bugüne yer aç.')).toBeInTheDocument();
   });
 
@@ -117,7 +117,7 @@ describe('Dali Uygulaması Uçtan Uca / Entegrasyon Akışı (Türkçe)', () => 
       fireEvent.click(screen.getByText("Dali'yi Aç"));
     });
 
-    expect(screen.getByRole('button', { name: 'Bugün' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Günlük Akış|Bugün/i })).toBeInTheDocument();
   });
 
   it('tekrarlanan görev (recurrence) ekleme akışını başarıyla yönetir', async () => {
