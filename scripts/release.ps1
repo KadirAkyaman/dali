@@ -69,15 +69,15 @@ $releaseBody = @{
     body = "### ✨ Dali v$Version Yenilikleri`n`n- ⏱️ **Bağımsız Pomodoro & Derin Odak Sayfası**: Sol menüden doğrudan erişilebilen odak çalışma alanı, görev seçimi ve seans takibi.`n- 🌿 **Doğal Ortam Sesleri (Offline)**: Web Audio API ile sıfır harici dosya bağımlılığıyla üretilen Rahatlatıcı Yağmur ve Okyanus Dalgaları.`n- 📊 **Haftalık Ritim & İstatistikler**: Bugün sayfasının en üstüne taşınarak anlık haftalık ivme takibi sağlandı.`n- 💫 **Yenilenen Günün Ritmi & Enerjisi (Daily Pulse)**: 5 farklı ruh hali & enerji durumu için özel rehberlik ve motivasyon sözleri.`n- 🪟 **Ultra-Mini Yüzen Bar Modu**: Widget başlığında doğrudan görünen mini bar butonuyla tek tıkla kompakt tek görev çubuğuna dönüşme.`n- 🚀 **Performans ve Hata İyileştirmeleri**."
     draft = $false
     prerelease = $false
-} | ConvertTo-Json
+$releaseJson = $releaseBody | ConvertTo-Json
 
-$rel = Invoke-RestMethod -Uri "https://api.github.com/repos/KadirAkyaman/dali/releases" -Method Post -Headers $headers -Body $releaseBody
+$rel = Invoke-RestMethod -Uri "https://api.github.com/repos/KadirAkyaman/dali/releases" -Method Post -Headers $headers -ContentType "application/json; charset=utf-8" -Body ([System.Text.Encoding]::UTF8.GetBytes($releaseJson))
 $relId = $rel.id
 
 $exePath = "src-tauri/target/release/bundle/nsis/Dali_${Version}_x64-setup.exe"
 $sigPath = "src-tauri/target/release/bundle/nsis/Dali_${Version}_x64-setup.exe.sig"
 
-$sig = [System.IO.File]::ReadAllText((Resolve-Path $sigPath))
+$sig = [System.IO.File]::ReadAllText((Resolve-Path $sigPath)).Trim()
 
 $latestJson = @{
     version = $Version
@@ -91,18 +91,17 @@ $latestJson = @{
     }
 } | ConvertTo-Json -Depth 5
 
-Set-Content "latest.json" $latestJson
+[System.IO.File]::WriteAllText("latest.json", $latestJson, [System.Text.Encoding]::UTF8)
 
 function Upload-File($fPath, $fName, $cType) {
     $uploadUri = "https://uploads.github.com/repos/KadirAkyaman/dali/releases/$relId/assets?name=$fName"
     $bytes = [System.IO.File]::ReadAllBytes((Resolve-Path $fPath))
     $uHeaders = @{
         "Authorization" = "Bearer $token"
-        "Content-Type" = $cType
         "User-Agent" = "Dali-App"
     }
     Write-Host "Yükleniyor: $fName..." -ForegroundColor Gray
-    Invoke-RestMethod -Uri $uploadUri -Method Post -Headers $uHeaders -Body $bytes | Out-Null
+    Invoke-RestMethod -Uri $uploadUri -Method Post -Headers $uHeaders -ContentType $cType -Body $bytes | Out-Null
     Write-Host "$fName yüklendi." -ForegroundColor Green
 }
 
