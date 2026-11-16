@@ -66,9 +66,10 @@ $headers = @{
 $releaseBody = @{
     tag_name = "v$Version"
     name = "Dali v$Version"
-    body = "### ✨ Dali v$Version Yenilikleri`n`n- ⏱️ **Bağımsız Pomodoro & Derin Odak Sayfası**: Sol menüden doğrudan erişilebilen odak çalışma alanı, görev seçimi ve seans takibi.`n- 🌿 **Doğal Ortam Sesleri (Offline)**: Web Audio API ile sıfır harici dosya bağımlılığıyla üretilen Rahatlatıcı Yağmur ve Okyanus Dalgaları.`n- 📊 **Haftalık Ritim & İstatistikler**: Bugün sayfasının en üstüne taşınarak anlık haftalık ivme takibi sağlandı.`n- 💫 **Yenilenen Günün Ritmi & Enerjisi (Daily Pulse)**: 5 farklı ruh hali & enerji durumu için özel rehberlik ve motivasyon sözleri.`n- 🪟 **Ultra-Mini Yüzen Bar Modu**: Widget başlığında doğrudan görünen mini bar butonuyla tek tıkla kompakt tek görev çubuğuna dönüşme.`n- 🚀 **Performans ve Hata İyileştirmeleri**."
+    body = "### ✨ Dali v$Version Yenilikleri`n`n- 🔥 **Alışkanlıklar ve Zincir (Habit Streaks)**: Günlük mikro-ritüeller (Su, Kitap, Yürüyüş, Meditasyon), 7 günlük interaktif dot zinciri, kesintisiz gün sayacı (streak) ve en iyi rekor rozetleri.`n- 📝 **Not Defteri ve Karalama (Daily Scratchpad)**: Günün notu ve kalıcı hızlı karalama alanı, otomatik kaydetme, saat damgası ve tek tıkla **Satırları Göreve Dönüştürme**.`n- ⏱️ **Bağımsız Pomodoro ve Odak Sayfası**: Sol menüden doğrudan erişilebilen odak çalışma alanı, görev seçimi ve seans takibi.`n- 🌿 **Doğal Ortam Sesleri (Offline)**: Web Audio API ile sıfır harici dosya bağımlılığıyla üretilen Rahatlatıcı Yağmur ve Okyanus Dalgaları.`n- 📊 **Haftalık Ritim ve İstatistikler**: Bugün sayfasının en üstüne taşındı.`n- 💫 **Yenilenen Günün Ritmi ve Enerjisi (Daily Pulse)**: 5 farklı durum için özel rehberlik.`n- 🪟 **Ultra-Mini Yüzen Bar Modu**: Widget başlığında doğrudan görünen mini bar butonuyla tek tıkla kompakt tek görev çubuğuna dönüşme.`n- 🚀 **Performans ve Hata İyileştirmeleri**."
     draft = $false
     prerelease = $false
+}
 $releaseJson = $releaseBody | ConvertTo-Json
 
 $rel = Invoke-RestMethod -Uri "https://api.github.com/repos/KadirAkyaman/dali/releases" -Method Post -Headers $headers -ContentType "application/json; charset=utf-8" -Body ([System.Text.Encoding]::UTF8.GetBytes($releaseJson))
@@ -81,7 +82,7 @@ $sig = [System.IO.File]::ReadAllText((Resolve-Path $sigPath)).Trim()
 
 $latestJson = @{
     version = $Version
-    notes = "Dali v${Version} - Odak Sayfasi, Ortam Sesleri, Yenilenen Gunun Ritmi ve Ultra-Mini Bar Modu."
+    notes = "Dali v${Version} - Aliskanliklar Zinciri, Not Defteri, Pomodoro Odak Sayfasi ve Ultra-Mini Bar Modu."
     pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     platforms = @{
         "windows-x86_64" = @{
@@ -91,7 +92,8 @@ $latestJson = @{
     }
 } | ConvertTo-Json -Depth 5
 
-[System.IO.File]::WriteAllText("latest.json", $latestJson, [System.Text.Encoding]::UTF8)
+$cleanBytes = [System.Text.Encoding]::UTF8.GetBytes($latestJson)
+[System.IO.File]::WriteAllBytes("latest.json", $cleanBytes)
 
 function Upload-File($fPath, $fName, $cType) {
     $uploadUri = "https://uploads.github.com/repos/KadirAkyaman/dali/releases/$relId/assets?name=$fName"

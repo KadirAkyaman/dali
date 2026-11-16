@@ -83,6 +83,15 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   const [editIcon, setEditIcon] = useState(task.icon || '');
   const [editPriority, setEditPriority] = useState<TaskPriority | ''>(task.priority || '');
   const [showSparkles, setShowSparkles] = useState(false);
+  const sparklesTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (sparklesTimeoutRef.current) {
+        clearTimeout(sparklesTimeoutRef.current);
+      }
+    };
+  }, []);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -109,7 +118,8 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     if (isReadOnly) return;
     if (task.status === 'open') {
       setShowSparkles(true);
-      setTimeout(() => setShowSparkles(false), 500);
+      if (sparklesTimeoutRef.current) clearTimeout(sparklesTimeoutRef.current);
+      sparklesTimeoutRef.current = setTimeout(() => setShowSparkles(false), 500);
     }
     onToggle(task.id);
   };
