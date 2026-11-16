@@ -30,15 +30,16 @@ const WIDGET_SIZES = [
 const OPACITY_OPTIONS = [50, 70, 85, 95, 100];
 
 export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull }) => {
-  const { todayStr, selectedDate, setSelectedDate, tasks, toggleTask, addTask } = useTasks();
+  const { todayStr, selectedDate, setSelectedDate, tasks, toggleTask, addTask, refreshTasks } = useTasks();
   const { resolvedTheme } = useTheme();
 
-  // Widget moduna geçildiğinde her zaman bugünü garantiye al
+  // Widget moduna geçildiğinde her zaman bugünü garantiye al ve görevleri tazele
   useEffect(() => {
     if (selectedDate !== todayStr) {
       setSelectedDate(todayStr);
     }
-  }, [todayStr, selectedDate, setSelectedDate]);
+    refreshTasks();
+  }, [todayStr, selectedDate, setSelectedDate, refreshTasks]);
 
   const [newTitle, setNewTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);

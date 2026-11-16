@@ -189,6 +189,12 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         onDragEnd={() => {
           onDragEnd && onDragEnd();
         }}
+        onDragEnter={(e) => {
+          if (!isReadOnly) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+          }
+        }}
         onDragOver={(e) => {
           if (!isReadOnly) {
             e.preventDefault();
@@ -207,14 +213,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           <div className={styles.dragControls}>
             <div
               className={styles.dragHandle}
-              title="Sıralamak için sürükle"
-              draggable={!isReadOnly && !isEditing}
-              onDragStart={(e) => {
-                e.stopPropagation();
-                e.dataTransfer.setData('text/plain', String(index));
-                e.dataTransfer.effectAllowed = 'move';
-                onDragStart && onDragStart(index);
-              }}
+              title="Sıralamak için basılı tutup sürükleyin"
             >
               <GripVertical size={13} style={{ pointerEvents: 'none' }} />
             </div>

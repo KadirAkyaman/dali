@@ -167,27 +167,42 @@
   position: relative;
 }
 
-.editorAreaExpanded {
+.widgetPortalBackdrop {
   position: fixed;
   inset: 0;
-  z-index: 9999;
-  background-color: var(--surface);
+  background-color: rgba(5, 7, 6, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 99999;
   display: flex;
-  flex-direction: column;
-  padding: 24px 36px 36px;
-  animation: expandFade 180ms cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.45);
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  animation: widgetFadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes expandFade {
+@keyframes widgetFadeIn {
   from {
     opacity: 0;
-    transform: scale(0.99);
+    transform: scale(0.98);
   }
   to {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+.widgetPortalCard {
+  width: 100%;
+  max-width: 980px;
+  height: 90vh;
+  background-color: var(--surface);
+  border: 1px solid var(--border-focus);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .editorHeader {

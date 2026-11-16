@@ -71,7 +71,7 @@ export const RoutinesView: React.FC = () => {
     setNewPriority('');
   };
 
-  const handleSaveRoutineTask = (dayNum: number, e: React.FormEvent) => {
+  const handleSaveRoutineTask = async (dayNum: number, e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = newTitle.trim();
     if (!trimmed) return;
@@ -89,6 +89,16 @@ export const RoutinesView: React.FC = () => {
         d.dayNumber === dayNum ? { ...d, tasks: [...d.tasks, newTask] } : d
       )
     );
+
+    // Eğer eklenen gün bugünse, bugünün akışına da doğrudan ekle
+    if (dayNum === currentDayOfWeek) {
+      await addTask({
+        title: newTask.title,
+        reminder_at: newTask.reminder_at || null,
+        icon: newTask.icon || null,
+        priority: newTask.priority || null,
+      });
+    }
 
     setAddingDayNumber(null);
   };

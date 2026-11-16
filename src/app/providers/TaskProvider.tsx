@@ -73,19 +73,20 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // O gün için tekrarlanan kural görevlerini senkronize et
       await recurrenceService.syncRecurringTasksForDate(date, currentToday);
 
-      // Haftanın gününe ait haftalık rutinleri otomatik yükle
+      // Haftanın gününe ait haftalık rutinleri otomatik yükle ve senkronize et
       try {
-        const appliedKey = `dali_routines_applied_${date}`;
-        if (typeof window !== 'undefined' && !localStorage.getItem(appliedKey)) {
-          const routinesStr = localStorage.getItem('dali_weekly_routines');
-          if (routinesStr) {
-            const routinesList: DayRoutine[] = JSON.parse(routinesStr);
-            const d = new Date(date);
-            const day = d.getDay();
-            const dayNumber = day === 0 ? 7 : day;
-            const matchingDay = routinesList.find((r) => r.dayNumber === dayNumber);
-            if (matchingDay && matchingDay.tasks.length > 0) {
-              for (const t of matchingDay.tasks) {
+        const routinesStr = typeof window !== 'undefined' ? localStorage.getItem('dali_weekly_routines') : null;
+        if (routinesStr) {
+          const routinesList: DayRoutine[] = JSON.parse(routinesStr);
+          const d = new Date(date);
+          const day = d.getDay();
+          const dayNumber = day === 0 ? 7 : day;
+          const matchingDay = routinesList.find((r) => r.dayNumber === dayNumber);
+          if (matchingDay && matchingDay.tasks.length > 0) {
+            const currentExisting = await taskService.getTasksForDate(date);
+            const existingTitles = new Set(currentExisting.map((t) => t.title.trim().toLowerCase()));
+            for (const t of matchingDay.tasks) {
+              if (!existingTitles.has(t.title.trim().toLowerCase())) {
                 await taskService.createTask(
                   {
                     title: t.title,
@@ -99,7 +100,6 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             }
           }
-          localStorage.setItem(appliedKey, 'true');
         }
       } catch (routErr) {
         console.error('Haftalık rutin senkronizasyon hatası:', routErr);

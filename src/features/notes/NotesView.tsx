@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   FileText,
   Plus,
@@ -820,6 +821,115 @@ export const NotesView: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* BÜYÜTÜLMÜŞ WİDGET MODU (PORTAL) */}
+      {isExpanded && activeNote && typeof document !== 'undefined' && createPortal(
+        <div className={styles.widgetPortalBackdrop} onClick={() => setIsExpanded(false)}>
+          <div className={styles.widgetPortalCard} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.editorHeader} style={{ padding: '20px 28px' }}>
+              <div className={styles.titleDateRow}>
+                <input
+                  type="text"
+                  className={styles.titleInput}
+                  placeholder={formatDisplayDate(activeNote.dateStr)}
+                  value={activeNote.title}
+                  onChange={(e) => handleTitleChange(e.target.value)}
+                  style={{ fontSize: '24px' }}
+                />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div className={styles.datePill}>
+                    <Calendar size={13} />
+                    <span>{formatDisplayDate(activeNote.dateStr)}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={`${styles.actionPill} ${styles.actionPillPrimary}`}
+                    onClick={() => setIsExpanded(false)}
+                    title="Normal görünüme dön [Esc]"
+                  >
+                    <Minimize2 size={13} />
+                    <span>Küçült [Esc]</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Hızlı Format & Araç Çubuğu */}
+              <div className={styles.toolbarRow} style={{ marginTop: '12px' }}>
+                <div className={styles.formatGroup}>
+                  <button type="button" className={styles.formatBtn} onClick={() => insertTextAtCursor('\n# ')}>
+                    <Heading1 size={13} /> H1
+                  </button>
+                  <button type="button" className={styles.formatBtn} onClick={() => insertTextAtCursor('\n## ')}>
+                    <Heading2 size={13} /> H2
+                  </button>
+                  <button type="button" className={styles.formatBtn} onClick={() => insertTextAtCursor('\n- ')}>
+                    <List size={13} /> Liste
+                  </button>
+                  <button type="button" className={styles.formatBtn} onClick={() => insertTextAtCursor('\n1. ')}>
+                    <ListOrdered size={13} /> Sayı
+                  </button>
+                  <button type="button" className={styles.formatBtn} onClick={() => insertTextAtCursor('\n- [ ] ')}>
+                    <CheckSquare size={13} /> Kutu
+                  </button>
+                  <button type="button" className={styles.formatBtn} onClick={() => insertTextAtCursor('\n> ')}>
+                    <Quote size={13} /> Alıntı
+                  </button>
+                </div>
+
+                <div className={styles.actionsGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.actionPill} ${isPreview ? styles.actionPillPrimary : ''}`}
+                    onClick={() => setIsPreview(!isPreview)}
+                  >
+                    {isPreview ? <Edit3 size={13} /> : <Eye size={13} />}
+                    <span>{isPreview ? 'Düzenle' : 'Önizle'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.actionPill}
+                    onClick={handleCopy}
+                  >
+                    {copied ? <Check size={13} color="var(--success)" /> : <Copy size={13} />}
+                    <span>{copied ? 'Kopyalandı' : 'Kopyala'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.contentArea} style={{ padding: '0 28px' }}>
+              {isPreview ? (
+                <div className={styles.previewContainer}>
+                  {activeNote.content ? (
+                    renderMarkdownPreview(activeNote.content)
+                  ) : (
+                    <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+                      Henüz içerik yazılmadı.
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <textarea
+                  className={styles.editorTextarea}
+                  value={activeNote.content}
+                  onChange={handleContentChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Düşüncelerini buraya yaz... Notion tarzı bloklar için satır başına /h1, /h2, /b, /n, /q yazabilirsiniz."
+                  autoFocus
+                />
+              )}
+            </div>
+
+            <footer className={styles.editorFooter} style={{ padding: '12px 28px' }}>
+              <span>{wordCount} kelime • {charCount} karakter</span>
+              <span>{isSaved ? 'Kaydedildi' : 'Kaydediliyor...'}</span>
+            </footer>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

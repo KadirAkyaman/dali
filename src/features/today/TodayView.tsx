@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, CheckCircle, Sparkles, Timer, List, Clock } from 'lucide-react';
+import { CheckCircle, Sparkles, Timer, List, Clock } from 'lucide-react';
 import { useTasks } from '../../app/providers/TaskProvider';
 import { Task, TaskPriority } from '../../types/task';
 import { RecurrenceFrequency } from '../../types/recurrence';
@@ -11,7 +11,7 @@ import { WeeklyStatsCard } from '../../components/stats/WeeklyStatsCard';
 import { RoutineTemplatesModal } from '../../components/tasks/RoutineTemplatesModal';
 import { FocusTimerModal } from '../../components/focus/FocusTimerModal';
 import { TimeboxView } from './TimeboxView';
-import { formatDisplayDate, isTodayDate, isPastDate } from '../../domain/date/dateService';
+import { formatDisplayDate } from '../../domain/date/dateService';
 import { QuoteService, Quote } from '../../domain/quote/quoteService';
 import styles from './TodayView.module.css';
 
@@ -21,7 +21,6 @@ export const TodayView: React.FC = () => {
     selectedDate,
     setSelectedDate,
     todayStr,
-    isReadOnly,
     addTask,
     toggleTask,
     updateTask,
@@ -30,26 +29,34 @@ export const TodayView: React.FC = () => {
     snoozeTaskToTomorrow,
   } = useTasks();
 
+  // Günlük Akış sekmesi her zaman bugünün tarihine sabitlenir
+  useEffect(() => {
+    if (selectedDate !== todayStr) {
+      setSelectedDate(todayStr);
+    }
+  }, [todayStr, selectedDate, setSelectedDate]);
+
   const [viewMode, setViewMode] = useState<'list' | 'timebox'>('list');
 
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const [quote, setQuote] = useState<Quote>(() => QuoteService.getDailyQuote(selectedDate));
+  const [quote, setQuote] = useState<Quote>(() => QuoteService.getDailyQuote(todayStr));
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
   const [focusTask, setFocusTask] = useState<Task | null>(null);
   const [isFocusModalOpen, setIsFocusModalOpen] = useState(false);
 
   useEffect(() => {
-    setQuote(QuoteService.getDailyQuote(selectedDate));
-  }, [selectedDate]);
+    setQuote(QuoteService.getDailyQuote(todayStr));
+  }, [todayStr]);
 
   const handleNextQuote = () => {
     setQuote(QuoteService.getRandomQuote());
   };
 
-  const isCurrentToday = isTodayDate(selectedDate, todayStr);
-  const isPast = isPastDate(selectedDate, todayStr);
+  const isReadOnly = false;
+  const isCurrentToday = true;
+  const isPast = false;
 
   const totalCount = tasks.length;
   const completedCount = tasks.filter((t) => t.status === 'completed').length;
@@ -138,7 +145,7 @@ export const TodayView: React.FC = () => {
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.dateRow}>
-          <h1 className={styles.title}>{formatDisplayDate(selectedDate)}</h1>
+          <h1 className={styles.title}>{formatDisplayDate(todayStr)}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {/* 2 Mod Switcher: Liste vs Zaman Çizelgesi */}
             <div className={styles.viewModePillGroup}>
@@ -188,35 +195,14 @@ export const TodayView: React.FC = () => {
                 </button>
               </>
             )}
-
-            {!isCurrentToday && (
-              <button
-                type="button"
-                className={styles.returnTodayButton}
-                onClick={() => setSelectedDate(todayStr)}
-              >
-                Bugüne Dön
-              </button>
-            )}
           </div>
         </div>
 
         <div>
           <span className={styles.subTitle}>
-            {isCurrentToday
-              ? 'Bugüne yer aç.'
-              : isPast
-              ? 'Geçmiş gün arşivi.'
-              : 'Gelecek günlerin planı.'}
+            Bugüne yer aç.
           </span>
         </div>
-
-        {isPast && (
-          <div className={styles.readOnlyBanner}>
-            <ShieldAlert size={14} />
-            <span>Geçmiş günler salt okunurdur. Görev eklenemez veya düzenlenemez.</span>
-          </div>
-        )}
 
         {/* Günün Motivasyon Cümlesi */}
         {quote && (
@@ -290,6 +276,10 @@ export const TodayView: React.FC = () => {
       ) : (
         <section
           className={styles.taskList}
+          onDragEnter={(e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+          }}
           onDragOver={(e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';

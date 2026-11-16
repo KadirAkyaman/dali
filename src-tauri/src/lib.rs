@@ -72,6 +72,33 @@ fn set_always_on_top(window: Window, always_on_top: bool) -> Result<(), String> 
 }
 
 #[tauri::command]
+fn enter_zen_fullscreen(window: Window) -> Result<(), String> {
+    window.set_fullscreen(true).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn exit_zen_fullscreen(window: Window) -> Result<(), String> {
+    window.set_fullscreen(false).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn enter_capture_overlay(window: Window) -> Result<bool, String> {
+    let was_max = window.is_maximized().map_err(|e| e.to_string())?;
+    if !was_max {
+        window.maximize().map_err(|e| e.to_string())?;
+    }
+    Ok(was_max)
+}
+
+#[tauri::command]
+fn exit_capture_overlay(window: Window, was_maximized: bool) -> Result<(), String> {
+    if !was_maximized {
+        window.unmaximize().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
 fn exit_app(app: AppHandle) {
     app.exit(0);
 }
@@ -89,7 +116,9 @@ pub fn run() {
                         if let Some(window) = app.get_webview_window("main") {
                             let _ = window.show();
                             let _ = window.unminimize();
+                            let _ = window.set_always_on_top(true);
                             let _ = window.set_focus();
+                            let _ = window.set_always_on_top(false);
                             let shortcut_str = shortcut.to_string().to_lowercase();
                             if shortcut_str.contains("space") {
                                 let _ = window.emit("trigger-quick-capture", ());
@@ -102,10 +131,12 @@ pub fn run() {
                 .build(),
         )
         .setup(|app| {
-            // Global kısayolları kaydet
+            // Global kısayolları güvenle kaydet
             let _ = app.global_shortcut().register("Ctrl+Space");
+            let _ = app.global_shortcut().register("CommandOrControl+Space");
             let _ = app.global_shortcut().register("Ctrl+.");
             let _ = app.global_shortcut().register("Ctrl+Period");
+            let _ = app.global_shortcut().register("CommandOrControl+Period");
             // Sistem tepsisi menüsü oluştur
             let show_item = MenuItem::with_id(app, "show", "Dali'yi Aç", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Çıkış", true, None::<&str>)?;
@@ -154,6 +185,10 @@ pub fn run() {
             exit_widget_mode,
             set_widget_size,
             set_always_on_top,
+            enter_zen_fullscreen,
+            exit_zen_fullscreen,
+            enter_capture_overlay,
+            exit_capture_overlay,
             exit_app
         ])
         .run(tauri::generate_context!())

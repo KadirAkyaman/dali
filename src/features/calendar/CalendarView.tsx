@@ -12,7 +12,7 @@ import {
   isSameDay,
   parseISO,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, CalendarCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarCheck, CheckCircle2 } from 'lucide-react';
 import { useTasks } from '../../app/providers/TaskProvider';
 import { Task } from '../../types/task';
 import { formatMonthYear, isPastDate, formatDisplayDate } from '../../domain/date/dateService';
@@ -23,29 +23,29 @@ const turkishWeekdays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 const taskRepo = new LocalTaskRepository();
 
 interface CalendarViewProps {
-  onSelectDateAndGoToToday: (dateStr: string) => void;
+  onSelectDateAndGoToToday?: (dateStr: string) => void;
 }
 
-export const CalendarView: React.FC<CalendarViewProps> = ({ onSelectDateAndGoToToday }) => {
-  const { todayStr } = useTasks();
+export const CalendarView: React.FC<CalendarViewProps> = () => {
+  const { todayStr, addTask } = useTasks();
   const [inspectedDate, setInspectedDate] = useState<string>(todayStr);
   const [inspectedTasks, setInspectedTasks] = useState<Task[]>([]);
+  const [newTaskTitle, setNewTaskTitle] = useState<string>('');
   const [currentMonth, setCurrentMonth] = useState<Date>(parseISO(todayStr));
   const [monthCounts, setMonthCounts] = useState<Record<string, { total: number; completed: number }>>({});
 
   const monthKey = format(currentMonth, 'yyyy-MM');
 
-  useEffect(() => {
-    taskRepo.getTaskCountsByMonth(monthKey).then((counts) => {
-      setMonthCounts(counts);
-    });
-  }, [monthKey, inspectedDate]);
+  const refreshInspectedTasks = async () => {
+    const list = await taskRepo.findByDate(inspectedDate);
+    setInspectedTasks(list);
+    const counts = await taskRepo.getTaskCountsByMonth(monthKey);
+    setMonthCounts(counts);
+  };
 
   useEffect(() => {
-    taskRepo.findByDate(inspectedDate).then((tasks) => {
-      setInspectedTasks(tasks);
-    });
-  }, [inspectedDate]);
+    refreshInspectedTasks();
+  }, [monthKey, inspectedDate]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
@@ -68,8 +68,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onSelectDateAndGoToT
     setInspectedDate(dateStr);
   };
 
-  const handleGoToPlan = () => {
-    onSelectDateAndGoToToday(inspectedDate);
+  const handleCreateTaskForInspectedDate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = newTaskTitle.trim();
+    if (!trimmed) return;
+    await addTask({
+      title: trimmed,
+      scheduled_date: inspectedDate,
+    });
+    setNewTaskTitle('');
+    await refreshInspectedTasks();
   };
 
   return (
@@ -157,17 +165,33 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onSelectDateAndGoToT
               ({inspectedTasks.length} görev)
             </span>
           </div>
-
-          <button
-            type="button"
-            className={styles.todayShortcut}
-            onClick={handleGoToPlan}
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent)' }}
-          >
-            <span>Bu Güne Git</span>
-            <ArrowRight size={13} />
-          </button>
         </div>
+
+        {/* Tarihe Görev Ekleme Alanı */}
+        <form onSubmit={handleCreateTaskForInspectedDate} style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+          <input
+            type="text"
+            placeholder={`${formatDisplayDate(inspectedDate)} için görev ekle...`}
+            value={newTaskTitle}
+            onChange={(e) => setNewTaskTitle(e.target.value)}
+            style={{
+              flex: 1,
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--surface-subtle)',
+              fontSize: '12px',
+              color: 'var(--text-primary)',
+            }}
+          />
+          <button
+            type="submit"
+            className={styles.todayShortcut}
+            style={{ backgroundColor: 'var(--accent)', color: '#fff', fontSize: '12px', padding: '6px 12px' }}
+          >
+            Ekle
+          </button>
+        </form>
 
         {inspectedTasks.length === 0 ? (
           <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', fontStyle: 'italic', padding: '8px 0' }}>
