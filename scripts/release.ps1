@@ -13,7 +13,7 @@ if (-not $Version) {
 }
 
 if (-not $ReleaseNotes) {
-    $ReleaseNotes = "### Dali v$Version`n`n- Uygulama iyileştirmeleri ve hata d\u00FCzeltmeleri."
+    $ReleaseNotes = "### Dali v$Version`n`n- Application improvements and bug fixes."
 }
 Write-Host "=== Dali v$Version Sürümü Hazırlanıyor ===" -ForegroundColor Cyan
 
