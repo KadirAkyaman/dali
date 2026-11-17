@@ -70,6 +70,8 @@ export const TodayView: React.FC = () => {
   const displayedTasks = activeFilter
     ? sortedTasks.filter((t) => t.icon === activeFilter)
     : sortedTasks;
+  const openTasks = displayedTasks.filter((task) => task.status === 'open');
+  const completedTasks = displayedTasks.filter((task) => task.status === 'completed');
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
@@ -135,40 +137,44 @@ export const TodayView: React.FC = () => {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <div className={styles.dateRow}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h1 className={styles.title}>{formatDisplayDate(selectedDate)}</h1>
-            {!isCurrentToday && (
-              <button
-                type="button"
-                className={styles.returnTodayButton}
-                onClick={() => setSelectedDate(todayStr)}
-                title="Bugünün tarihine dön"
-              >
-                <CalendarDays size={12} style={{ display: 'inline', marginRight: 4 }} />
-                Bugüne Dön
-              </button>
-            )}
+        <div className={styles.headerMain}>
+          <div className={styles.headingCopy}>
+            <span className={styles.eyebrow}>Günlük akış</span>
+            <div className={styles.titleLine}>
+              <h1 className={styles.title}>{formatDisplayDate(selectedDate)}</h1>
+              {!isCurrentToday && (
+                <button
+                  type="button"
+                  className={styles.returnTodayButton}
+                  onClick={() => setSelectedDate(todayStr)}
+                  title="Bugünün tarihine dön"
+                >
+                  <CalendarDays size={14} />
+                  Bugüne dön
+                </button>
+              )}
+            </div>
+            <p className={styles.subTitle}>Bugüne yer aç. Küçük adımlarla ilerle.</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* 2 Mod Switcher: Liste vs Zaman Çizelgesi */}
-            <div className={styles.viewModePillGroup}>
+
+          <div className={styles.headerActions}>
+            <div className={styles.viewModePillGroup} aria-label="Görünüm seçimi">
               <button
                 type="button"
                 className={`${styles.viewModeBtn} ${viewMode === 'list' ? styles.viewModeBtnActive : ''}`}
                 onClick={() => setViewMode('list')}
-                title="Standart Liste Görünümü"
+                title="Liste görünümü"
               >
-                <List size={12} />
+                <List size={15} />
                 <span>Liste</span>
               </button>
               <button
                 type="button"
                 className={`${styles.viewModeBtn} ${viewMode === 'timebox' ? styles.viewModeBtnActive : ''}`}
                 onClick={() => setViewMode('timebox')}
-                title="Saatlik Zaman Çizelgesi (Timebox)"
+                title="Zaman çizelgesi görünümü"
               >
-                <Clock size={12} />
+                <Clock size={15} />
                 <span>Çizelge</span>
               </button>
             </div>
@@ -177,35 +183,28 @@ export const TodayView: React.FC = () => {
               <>
                 <button
                   type="button"
-                  className={styles.returnTodayButton}
+                  className={styles.toolbarButton}
                   onClick={() => setIsTemplatesOpen(true)}
                   title="Hazır rutin şablonu yükle"
                 >
-                  <Sparkles size={12} style={{ display: 'inline', marginRight: 4 }} />
-                  Şablonlar
+                  <Sparkles size={15} />
+                  <span>Şablonlar</span>
                 </button>
-
                 <button
                   type="button"
-                  className={styles.returnTodayButton}
+                  className={`${styles.toolbarButton} ${styles.focusButton}`}
                   onClick={() => {
                     setFocusTask(null);
                     setIsFocusModalOpen(true);
                   }}
-                  title="Serbest Odak Sayacı (Pomodoro)"
+                  title="Serbest odak sayacı"
                 >
-                  <Timer size={12} style={{ display: 'inline', marginRight: 4 }} />
-                  Odaklan
+                  <Timer size={15} />
+                  <span>Odaklan</span>
                 </button>
               </>
             )}
           </div>
-        </div>
-
-        <div>
-          <span className={styles.subTitle}>
-            Bugüne yer aç.
-          </span>
         </div>
 
         {/* Günün Motivasyon Cümlesi */}
@@ -231,10 +230,11 @@ export const TodayView: React.FC = () => {
       {totalCount > 0 && (
         <section className={styles.progressSection}>
           <div className={styles.progressTextRow}>
-            <span>
-              {completedCount} / {totalCount} tamamlandı
-            </span>
-            <span>%{Math.round(progressPercent)}</span>
+            <div className={styles.progressCopy}>
+              <span className={styles.progressEyebrow}>Günlük ilerleme</span>
+              <span className={styles.progressCount}>{completedCount} / {totalCount} görev tamamlandı</span>
+            </div>
+            <span className={styles.progressPercent}>%{Math.round(progressPercent)}</span>
           </div>
           <div className={styles.progressBarContainer}>
             <div
@@ -286,31 +286,41 @@ export const TodayView: React.FC = () => {
             e.preventDefault();
           }}
         >
-          {displayedTasks.map((task, index) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              index={index}
-              totalTasks={displayedTasks.length}
-              isReadOnly={isReadOnly}
-              onToggle={toggleTask}
-              onUpdate={(id, updates) => updateTask(id, updates)}
-              onDelete={deleteTask}
-              onSnooze={snoozeTaskToTomorrow}
-              onStartFocus={(t) => {
-                setFocusTask(t);
-                setIsFocusModalOpen(true);
-              }}
-              onMoveUp={handleMoveUp}
-              onMoveDown={handleMoveDown}
-              onDragStart={handleDragStart}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              onDragEnd={handleDragEnd}
-              isDragging={draggedIndex === index}
-              isDragOver={dragOverIndex === index}
-            />
-          ))}
+          {openTasks.length > 0 && (
+            <div className={styles.taskSectionHeading}>
+              <span><span className={styles.openDot} />Yapılacaklar</span>
+              <span className={styles.sectionCount}>{openTasks.length}</span>
+            </div>
+          )}
+
+          {openTasks.map((task) => {
+            const index = displayedTasks.indexOf(task);
+            return (
+              <TaskItem
+                key={task.id}
+                task={task}
+                index={index}
+                totalTasks={displayedTasks.length}
+                isReadOnly={isReadOnly}
+                onToggle={toggleTask}
+                onUpdate={(id, updates) => updateTask(id, updates)}
+                onDelete={deleteTask}
+                onSnooze={snoozeTaskToTomorrow}
+                onStartFocus={(t) => {
+                  setFocusTask(t);
+                  setIsFocusModalOpen(true);
+                }}
+                onMoveUp={handleMoveUp}
+                onMoveDown={handleMoveDown}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
+                isDragging={draggedIndex === index}
+                isDragOver={dragOverIndex === index}
+              />
+            );
+          })}
 
           <TaskInput
             onAddTask={(
@@ -335,10 +345,46 @@ export const TodayView: React.FC = () => {
 
           {totalCount === 0 && (
             <div className={styles.emptyState}>
-              {isCurrentToday
-                ? 'Bugün için planın boş. İstersen küçük bir şey ekle.'
-                : 'Bu gün için planlanmış bir görev bulunmuyor.'}
+              <span className={styles.emptyIcon}><CheckCircle size={19} /></span>
+              <span className={styles.emptyTitle}>{isCurrentToday ? 'Güne açık bir sayfa' : 'Bu gün henüz planlanmamış'}</span>
+              <span className={styles.emptyDescription}>
+                {isCurrentToday ? 'İlk görevini ekleyerek ritmini kur.' : 'Seçtiğin tarih için planlanmış görev bulunmuyor.'}
+              </span>
             </div>
+          )}
+
+          {completedTasks.length > 0 && (
+            <>
+              <div className={`${styles.taskSectionHeading} ${styles.completedHeading}`}>
+                <span><CheckCircle size={15} />Tamamlananlar</span>
+                <span className={styles.sectionCount}>{completedTasks.length}</span>
+              </div>
+              {completedTasks.map((task) => {
+                const index = displayedTasks.indexOf(task);
+                return (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    index={index}
+                    totalTasks={displayedTasks.length}
+                    isReadOnly={isReadOnly}
+                    onToggle={toggleTask}
+                    onUpdate={(id, updates) => updateTask(id, updates)}
+                    onDelete={deleteTask}
+                    onSnooze={snoozeTaskToTomorrow}
+                    onStartFocus={(t) => { setFocusTask(t); setIsFocusModalOpen(true); }}
+                    onMoveUp={handleMoveUp}
+                    onMoveDown={handleMoveDown}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onDragEnd={handleDragEnd}
+                    isDragging={draggedIndex === index}
+                    isDragOver={dragOverIndex === index}
+                  />
+                );
+              })}
+            </>
           )}
 
           {allCompleted && !isPast && (

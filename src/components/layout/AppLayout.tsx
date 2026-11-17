@@ -9,6 +9,7 @@ interface AppLayoutProps {
   onTabChange: (tab: ActiveTab) => void;
   onToggleWidgetMode?: () => void;
   immersive?: boolean;
+  wide?: boolean;
   children: React.ReactNode;
 }
 
@@ -17,6 +18,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   onTabChange,
   onToggleWidgetMode,
   immersive = false,
+  wide = false,
   children,
 }) => {
   const { feedback, clearFeedback, setSelectedDate, todayStr } = useTasks();
@@ -29,7 +31,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   };
 
   return (
-    <div className={`${styles.layout} ${immersive ? styles.immersive : ''}`}>
+    <div className={`${styles.layout} ${immersive ? styles.immersive : ''} ${wide ? styles.wide : ''}`}>
       <Titlebar immersive={immersive} />
       <div className={styles.bodyWrapper}>
         {!immersive && <Sidebar

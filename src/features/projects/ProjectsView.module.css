@@ -490,3 +490,66 @@
   color: #fff;
   cursor: pointer;
 }
+
+/* Refined project workspace */
+.container { gap: 22px; animation: projectIn 180ms ease-out; }
+@keyframes projectIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.titleRow { align-items: flex-end; gap: 18px; }
+.eyebrow { display: block; margin-bottom: 6px; color: var(--text-tertiary); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.title { margin: 0; font-size: clamp(24px, 3vw, 31px); line-height: 1.2; letter-spacing: -.04em; }
+.title svg { width: 21px; height: 21px; }
+.subTitle { margin-top: 7px; font-size: 12px; }
+.newProjectBtn { min-height: 38px; padding: 0 13px; border-radius: 10px; font-size: 12px; font-weight: 600; box-shadow: var(--shadow-subtle); }
+
+.layout { display: grid; grid-template-columns: minmax(230px, .75fr) minmax(0, 2fr); gap: 16px; min-height: 500px; align-items: start; }
+.projectList { width: auto; min-width: 0; gap: 18px; padding: 15px 12px; border: 1px solid var(--border); border-radius: 15px; background: var(--surface); box-shadow: var(--shadow-subtle); }
+.areaGroup { gap: 7px; }
+.areaTitle { padding: 0 8px; font-size: 9px; letter-spacing: .12em; }
+.areaList { gap: 4px; }
+.projectItem { min-height: 39px; gap: 9px; padding: 6px 9px; border: 1px solid transparent; border-radius: 10px; }
+.projectItem:hover { background: var(--surface-subtle); }
+.projectItemActive { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 20%, var(--border)); box-shadow: none; }
+.projectItemActive:hover { background: var(--accent-soft); }
+.projectName { font-size: 12px; font-weight: 550; }
+.projectCountBadge { padding: 3px 7px; background: var(--surface); border: 1px solid var(--border); font-size: 9px; font-variant-numeric: tabular-nums; }
+.projectItemActive .projectCountBadge { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 20%, var(--border)); }
+.iconBtn { width: 26px; height: 26px; border-radius: 7px; }
+
+.projectDetail { gap: 12px; }
+.detailHeader { gap: 13px; padding: 17px; border-radius: 15px; box-shadow: var(--shadow-subtle); }
+.detailTitleRow { align-items: flex-start; }
+.detailDot { width: 10px; height: 10px; box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 10%, transparent); }
+.detailTitle { margin: 0; font-size: 18px; letter-spacing: -.025em; }
+.areaPill { padding: 4px 8px; border-radius: 7px; font-size: 9px; letter-spacing: .05em; }
+.detailDesc { max-width: 620px; font-size: 11px; }
+.progressContainer { gap: 7px; }
+.progressTextRow { font-size: 10px; }
+.progressBarTrack { height: 5px; }
+.taskAddForm { gap: 7px; }
+.taskAddInput { min-height: 40px; padding: 0 12px; background: var(--surface); border-radius: 10px; font-size: 12px; }
+.taskAddInput:focus { box-shadow: 0 0 0 3px var(--accent-soft); }
+.taskAddSubmit { min-height: 40px; padding: 0 13px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.tasksList { gap: 7px; }
+.taskRow { min-height: 48px; padding: 8px 10px; border-radius: 10px; box-shadow: var(--shadow-subtle); }
+.taskRow:hover { background: var(--surface); border-color: var(--border-focus); }
+.taskCheck { width: 28px; height: 28px; justify-content: center; background: var(--surface-subtle); border-radius: 8px; }
+.taskTitleText { font-size: 12px; font-weight: 500; }
+.taskDateBadge { padding: 4px 7px; background: var(--surface-subtle); border-radius: 7px; font-variant-numeric: tabular-nums; }
+.emptyTasks, .noProjectSelected { padding: 28px 18px; background: var(--surface); border-radius: 13px; font-size: 12px; line-height: 1.6; font-style: normal; }
+.modalCard { border-radius: 18px; box-shadow: 0 24px 80px rgba(0, 0, 0, .2); }
+
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; gap: 12px; }
+  .projectList { flex-direction: row; overflow-x: auto; border-radius: 13px; padding: 10px; }
+  .areaGroup { min-width: max-content; }
+  .areaList { flex-direction: row; }
+  .projectItem { min-width: 150px; }
+  .titleRow { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 480px) {
+  .detailHeader { padding: 13px; }
+  .taskDateBadge { display: none; }
+  .formRow { flex-direction: column; }
+  .modalCard { padding: 18px; }
+}

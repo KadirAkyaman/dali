@@ -165,3 +165,26 @@
   color: #fff;
   border-color: #ef4444;
 }
+
+.container {
+  gap: 12px;
+  padding: 14px 15px;
+  margin-bottom: 0;
+  background: var(--danger-soft);
+  border: 1px solid color-mix(in srgb, var(--danger) 24%, var(--border));
+  border-radius: 14px;
+  box-shadow: none;
+}
+.title { color: var(--danger); font-size: 12px; }
+.alertIconPulse { color: var(--danger); animation: none; }
+.subtext { color: var(--text-secondary); font-size: 10px; }
+.alertList { gap: 7px; }
+.alertCard { padding: 10px 12px; background: var(--surface); border-color: color-mix(in srgb, var(--danger) 18%, var(--border)); border-radius: 10px; }
+.alertCard:hover { border-color: color-mix(in srgb, var(--danger) 36%, var(--border)); transform: none; }
+.clientName { color: var(--text-primary); font-size: 12px; }
+.monthTag { color: var(--text-secondary); background: var(--surface-subtle); font-size: 9px; }
+.daysOverdue { color: var(--danger); background: var(--danger-soft); }
+.dateRule, .amountLabel { color: var(--text-secondary); font-size: 9px; }
+.amountVal { color: var(--danger); font-size: 14px; }
+.actionBtn { padding: 7px 10px; color: var(--danger); background: var(--danger-soft); border-color: color-mix(in srgb, var(--danger) 24%, var(--border)); border-radius: 8px; font-size: 10px; }
+.actionBtn:hover { color: #fff; background: var(--danger); border-color: var(--danger); }

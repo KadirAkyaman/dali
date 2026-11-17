@@ -1,11 +1,21 @@
 .container {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   overflow-x: auto;
-  padding: 4px 0;
-  margin-bottom: var(--space-2);
+  padding: 0 0 3px;
+  margin-top: -8px;
   scrollbar-width: none;
+}
+
+.label {
+  flex: 0 0 auto;
+  margin-right: 2px;
+  color: var(--text-tertiary);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .container::-webkit-scrollbar {
@@ -16,11 +26,12 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 10px;
+  min-height: 29px;
+  padding: 0 10px;
   border-radius: var(--radius-full);
   font-size: var(--text-2xs);
   font-weight: var(--font-medium);
-  background-color: var(--surface-subtle);
+  background-color: var(--surface);
   color: var(--text-secondary);
   border: 1px solid var(--border);
   cursor: pointer;
@@ -36,5 +47,5 @@
 .pillActive {
   background-color: var(--accent-soft);
   color: var(--accent);
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
 }

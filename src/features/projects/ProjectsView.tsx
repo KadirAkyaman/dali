@@ -125,6 +125,7 @@ export const ProjectsView: React.FC = () => {
       <header className={styles.header}>
         <div className={styles.titleRow}>
           <div>
+            <span className={styles.eyebrow}>Çalışma alanı</span>
             <h1 className={styles.title}>
               <Layers size={22} color="var(--accent)" /> Projeler & Odak Alanları
             </h1>

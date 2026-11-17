@@ -17,10 +17,12 @@ export const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
 
   return (
     <div className={styles.container}>
+      <span className={styles.label}>Filtrele</span>
       <button
         type="button"
         className={`${styles.pill} ${activeFilter === null ? styles.pillActive : ''}`}
         onClick={() => onFilterChange(null)}
+        aria-pressed={activeFilter === null}
       >
         Tümü
       </button>
@@ -31,6 +33,7 @@ export const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
           type="button"
           className={`${styles.pill} ${activeFilter === icon ? styles.pillActive : ''}`}
           onClick={() => onFilterChange(activeFilter === icon ? null : icon)}
+          aria-pressed={activeFilter === icon}
           title={icon}
         >
           <DynamicIcon name={icon} size={13} />

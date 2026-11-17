@@ -15,6 +15,7 @@ import {
 import {
   ChevronLeft,
   ChevronRight,
+  CalendarDays,
   CalendarCheck,
   CheckCircle2,
   Circle,
@@ -64,6 +65,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onOpenDayInTodayView
   const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
   const days = eachDayOfInterval({ start: startDate, end: endDate });
+  const monthTaskTotal = Object.values(monthCounts).reduce((sum, item) => sum + item.total, 0);
+  const monthCompletedTotal = Object.values(monthCounts).reduce((sum, item) => sum + item.completed, 0);
 
   const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
@@ -104,7 +107,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onOpenDayInTodayView
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h2 className={styles.monthTitle}>{formatMonthYear(currentMonth)}</h2>
+        <div className={styles.headerTitleGroup}>
+          <span className={styles.eyebrow}>Planlama</span>
+          <div className={styles.titleLine}>
+            <CalendarDays size={22} className={styles.titleIcon} />
+            <h1 className={styles.monthTitle}>{formatMonthYear(currentMonth)}</h1>
+          </div>
+          <span className={styles.headerSubtitle}>Ayını gör, günlerini planla ve ilerlemeyi takip et.</span>
+        </div>
         <div className={styles.navButtons}>
           <button
             type="button"
@@ -134,6 +144,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onOpenDayInTodayView
         </div>
       </header>
 
+      <section className={styles.calendarCard} aria-label="Aylık takvim">
       <div className={styles.grid}>
         {turkishWeekdays.map((wd) => (
           <div key={wd} className={styles.weekdayHeader}>
@@ -177,6 +188,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onOpenDayInTodayView
           );
         })}
       </div>
+      <div className={styles.monthSummary}>
+        <span><i className={styles.summaryDot} />{monthTaskTotal} planlı görev</span>
+        <span><i className={`${styles.summaryDot} ${styles.summaryDotDone}`} />{monthCompletedTotal} tamamlandı</span>
+      </div>
+      </section>
 
       {/* Seçilen Günün Detayları */}
       <div className={styles.selectedDayDetails}>

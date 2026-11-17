@@ -535,3 +535,85 @@
 .bottomSpacer {
   height: 40px;
 }
+
+/* Refined finance workspace */
+.container { padding: clamp(18px, 2.4vw, 34px) 0 18px; gap: 20px; }
+.header { align-items: flex-end; gap: 18px; }
+.headerTitleArea { gap: 13px; }
+.iconBadge { width: 44px; height: 44px; border-radius: 13px; }
+.pageEyebrow { display: block; margin-bottom: 5px; color: var(--text-tertiary); font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.pageTitle { font-size: clamp(22px, 2.5vw, 30px); line-height: 1.2; letter-spacing: -.04em; font-weight: 700; }
+.pageSubtitle { margin-top: 6px; color: var(--text-secondary); font-size: 12px; }
+.headerActions { gap: 8px; }
+.yearSelector { gap: 3px; padding: 3px; background: var(--surface); border-color: var(--border); border-radius: 10px; }
+.yearNavBtn { width: 29px; height: 29px; }
+.yearNavBtn:hover { background: var(--surface-subtle); }
+.yearDisplay { min-width: 48px; text-align: center; font-size: 12px; }
+.addClientBtn { min-height: 37px; padding: 0 12px; border-radius: 10px; font-size: 11px; box-shadow: var(--shadow-subtle); }
+.kpiGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.kpiCard { min-width: 0; gap: 10px; padding: 13px; border-radius: 13px; box-shadow: var(--shadow-subtle); }
+.kpiIconWrapper { width: 36px; height: 36px; border-radius: 10px; }
+.kpiLabel { font-size: 9px; letter-spacing: .04em; }
+.kpiValue { font-size: clamp(15px, 1.8vw, 20px); line-height: 1.2; font-weight: 700; font-variant-numeric: tabular-nums; }
+.filterBar { align-items: flex-start; gap: 10px; }
+.searchWrapper { min-width: min(280px, 100%); max-width: 380px; }
+.searchInput { min-height: 38px; padding-top: 0; padding-bottom: 0; border-radius: 10px; font-size: 11px; }
+.statusChips { gap: 5px; }
+.filterChip { padding: 7px 9px; border-radius: 9px; font-size: 10px; }
+.filterChip:hover { background: var(--surface-hover); }
+.activeChip { background: var(--accent-soft) !important; border-color: color-mix(in srgb, var(--accent) 28%, var(--border)) !important; color: var(--accent) !important; }
+.tableCard { background: var(--surface); border-color: var(--border); border-radius: 15px; box-shadow: var(--shadow-subtle); }
+.tableScrollWrapper { scrollbar-color: var(--border-focus) transparent; }
+.matrixTable { min-width: 1280px; font-size: 11px; }
+.matrixTable th { padding: 12px 9px; background: var(--surface-subtle); color: var(--text-tertiary); font-size: 9px; letter-spacing: .09em; }
+.stickyColHeader { background: var(--surface-subtle) !important; }
+.monthHeader { min-width: 68px; }
+.clientRow td { padding: 12px 9px; border-bottom-color: var(--border); }
+.clientRow:hover { background: var(--surface-subtle); }
+.stickyCol { background: var(--surface); box-shadow: 5px 0 10px color-mix(in srgb, var(--text-primary) 5%, transparent); }
+.clientCell { gap: 4px; }
+.clientCellMain { align-items: flex-start; flex-direction: column; gap: 3px; }
+.clientCellName { color: var(--text-primary); font-size: 12px; font-weight: 650; }
+.clientCellRetainer { color: var(--accent); font-size: 10px; }
+.clientContact, .clientNotes { color: var(--text-secondary); font-size: 10px; }
+.rangeBadge { padding: 5px 7px; background: var(--surface-subtle); border-radius: 7px; font-size: 9px; }
+.monthCell { padding: 6px 4px !important; }
+.statusPill { min-height: 30px; padding: 4px 3px; border-radius: 8px; font-size: 9px; font-variant-numeric: tabular-nums; }
+.statusPaid { background: var(--success-soft); color: var(--success); border-color: color-mix(in srgb, var(--success) 25%, var(--border)); }
+.statusPaid:hover { background: color-mix(in srgb, var(--success) 15%, var(--surface)); }
+.statusPartial { background: var(--warning-soft); color: var(--warning); border-color: color-mix(in srgb, var(--warning) 28%, var(--border)); }
+.statusPartial:hover { background: color-mix(in srgb, var(--warning) 15%, var(--surface)); }
+.statusOverdue { background: var(--danger-soft); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 25%, var(--border)); animation: none; }
+.statusOverdue:hover { background: color-mix(in srgb, var(--danger) 14%, var(--surface)); }
+.statusPending { color: var(--text-tertiary); border-color: var(--border); }
+.statusPending:hover { background: var(--surface-subtle); color: var(--text-secondary); }
+.yearlyTotalText { color: var(--success); font-size: 11px; font-weight: 700; }
+.rowActionBtn { width: 29px; height: 29px; border-radius: 8px; }
+.rowActionBtn:hover { background: var(--surface-hover); color: var(--text-primary); }
+.deleteActionBtn:hover { background: var(--danger-soft); color: var(--danger); }
+.emptyTable { padding: 54px 24px !important; }
+.emptyIcon { color: var(--accent); }
+.emptyTitle { color: var(--text-primary); font-size: 16px; }
+.emptyDesc { font-size: 11px; line-height: 1.6; }
+
+@media (max-width: 1000px) {
+  .kpiGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  .header { align-items: flex-start; flex-direction: column; }
+  .headerActions { width: 100%; justify-content: space-between; }
+  .filterBar { flex-direction: column; }
+  .searchWrapper { width: 100%; max-width: none; }
+  .statusChips { width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+  .filterChip { white-space: nowrap; }
+  .kpiCard { padding: 11px; }
+  .kpiIconWrapper { display: none; }
+}
+
+@media (max-width: 420px) {
+  .kpiGrid { gap: 7px; }
+  .kpiLabel { font-size: 8px; }
+  .kpiValue { font-size: 14px; }
+  .pageSubtitle { max-width: 280px; line-height: 1.5; }
+}

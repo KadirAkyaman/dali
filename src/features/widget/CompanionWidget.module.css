@@ -326,3 +326,81 @@
   color: var(--text-primary);
 }
 
+/* Refined standard and ultra-mini widgets */
+.widgetContainer, .miniBarContainer {
+  border-radius: 16px;
+  border-color: color-mix(in srgb, var(--border) 78%, var(--text-primary));
+  box-shadow: 0 10px 36px color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+.widgetContainer { padding: 11px 13px 12px; }
+.widgetHeader { height: 37px; flex: 0 0 auto; border-color: color-mix(in srgb, var(--border) 75%, transparent); }
+.brandDot { width: 9px; height: 9px; box-shadow: 0 0 0 4px var(--accent-soft); }
+.brandText { font-size: 13px; letter-spacing: -.035em; }
+.controlButton { width: 29px; height: 29px; border-radius: 9px; }
+.controlButton:hover { background: var(--surface-hover); }
+.dateTitle { margin: 11px 0 0; font-size: 16px; letter-spacing: -.025em; }
+.miniQuote { margin: 8px 0 0; padding: 8px 10px; background: color-mix(in srgb, var(--surface-subtle) 76%, transparent); border-left: 2px solid var(--accent); border-radius: 0 9px 9px 0; font-size: 10px; line-height: 1.45; }
+.progressRow { margin-top: 10px; font-size: 10px; }
+.miniProgressBar { height: 5px; background: var(--surface-subtle); }
+.taskList { gap: 5px; margin-top: 11px; padding-right: 2px; }
+.widgetTaskRow {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  font-size: 12px;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+.widgetTaskRow:hover { background: var(--surface); border-color: var(--border-focus); }
+.widgetTaskRowDone { opacity: .65; }
+.widgetTaskCheck, .miniBarCheck {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--surface);
+  border: 1.5px solid var(--border-focus);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.widgetTaskCheckDone { background: var(--success); border-color: var(--success); }
+.widgetTaskTitle { min-width: 0; flex: 1; color: var(--text-primary); line-height: 1.4; overflow-wrap: anywhere; }
+.widgetTaskTitleDone { color: var(--text-tertiary); text-decoration: line-through; }
+.widgetTaskIcon { flex: 0 0 auto; font-size: 13px; }
+.widgetPriority { width: 6px; height: 6px; flex: 0 0 auto; border-radius: 50%; }
+.priorityLow { background: var(--accent); }
+.priorityMedium { background: var(--warning); }
+.priorityHigh { background: var(--danger); }
+.emptyState { padding: 30px 14px; background: var(--surface-subtle); border: 1px dashed var(--border-focus); border-radius: 12px; font-size: 11px; }
+.widgetFooter { padding-top: 9px; border-color: var(--border); }
+.openFullText { min-height: 28px; padding: 0 9px; background: var(--accent-soft); border-radius: 8px; font-size: 10px; }
+.openFullText:hover { text-decoration: none; background: var(--accent-soft-hover); }
+
+.miniBarContainer { padding: 9px 12px 10px; border-radius: 15px; }
+.miniBarHeader { min-height: 30px; padding-bottom: 5px; border-color: var(--border); }
+.miniBarHeader .brandText { font-size: 12px; }
+.miniBarHeader .brandDot { width: 7px; height: 7px; }
+.miniBarHeader .controlButton { width: 25px; height: 25px; border-radius: 8px; }
+.miniBarContent { gap: 8px; padding-top: 8px; }
+.miniBarTaskMain { gap: 8px; }
+.miniBarCheck { width: 20px; height: 20px; border-radius: 7px; }
+.miniBarTaskText { font-size: 12px; font-weight: 600; letter-spacing: -.01em; }
+.miniBarNav { gap: 4px; padding: 3px 4px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); font-size: 10px; }
+.miniBarNavBtn { width: 22px; height: 22px; border-radius: 7px; }
+.miniBarEmpty { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--text-secondary); font-size: 11px; }
+.miniBarOpenButton { color: var(--accent); background: var(--accent-soft); border: 0; border-radius: 8px; padding: 6px 9px; font-size: 10px; font-weight: 600; cursor: pointer; }
+.miniBarOpenButton:hover { background: var(--accent-soft-hover); }
+
+@media (max-width: 340px) {
+  .miniBarContainer { padding-left: 9px; padding-right: 9px; }
+  .miniBarHeader .controlButton { width: 22px; }
+  .miniBarTaskMain { gap: 6px; }
+  .miniBarNav { gap: 1px; }
+}
+

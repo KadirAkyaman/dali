@@ -179,6 +179,7 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             <Building2 size={24} />
           </div>
           <div>
+            <span className={styles.pageEyebrow}>Finansal takip</span>
             <h1 className={styles.pageTitle}>Kurum & Gelir Yönetimi</h1>
             <p className={styles.pageSubtitle}>
               Freelance müşteriler, aylık retainer sözleşmeleri ve tahsilat takibi
@@ -230,48 +231,48 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       {/* KPI Cards Bar */}
       <div className={styles.kpiGrid}>
         <div className={styles.kpiCard}>
-          <div className={styles.kpiIconWrapper} style={{ color: '#10b981', background: 'rgba(16, 185, 129, 0.12)' }}>
+          <div className={styles.kpiIconWrapper} style={{ color: 'var(--success)', background: 'var(--success-soft)' }}>
             <TrendingUp size={20} />
           </div>
           <div className={styles.kpiInfo}>
             <span className={styles.kpiLabel}>Bu Ay Tahsil Edilen</span>
-            <span className={styles.kpiValue} style={{ color: '#10b981' }}>
+            <span className={styles.kpiValue} style={{ color: 'var(--success)' }}>
               {financialSummary.currentMonthCollected.toLocaleString('tr-TR')} ₺
             </span>
           </div>
         </div>
 
         <div className={styles.kpiCard}>
-          <div className={styles.kpiIconWrapper} style={{ color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)' }}>
+          <div className={styles.kpiIconWrapper} style={{ color: 'var(--warning)', background: 'var(--warning-soft)' }}>
             <Clock size={20} />
           </div>
           <div className={styles.kpiInfo}>
             <span className={styles.kpiLabel}>Kalan Bekleyen Tahsilat</span>
-            <span className={styles.kpiValue} style={{ color: '#f59e0b' }}>
+            <span className={styles.kpiValue} style={{ color: 'var(--warning)' }}>
               {financialSummary.currentMonthRemaining.toLocaleString('tr-TR')} ₺
             </span>
           </div>
         </div>
 
         <div className={styles.kpiCard}>
-          <div className={styles.kpiIconWrapper} style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.12)' }}>
+          <div className={styles.kpiIconWrapper} style={{ color: 'var(--danger)', background: 'var(--danger-soft)' }}>
             <AlertTriangle size={20} />
           </div>
           <div className={styles.kpiInfo}>
             <span className={styles.kpiLabel}>Gecikmiş Alacak</span>
-            <span className={styles.kpiValue} style={{ color: financialSummary.totalOverdue > 0 ? '#ef4444' : 'inherit' }}>
+            <span className={styles.kpiValue} style={{ color: financialSummary.totalOverdue > 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
               {financialSummary.totalOverdue.toLocaleString('tr-TR')} ₺
             </span>
           </div>
         </div>
 
         <div className={styles.kpiCard}>
-          <div className={styles.kpiIconWrapper} style={{ color: '#6366f1', background: 'rgba(99, 102, 241, 0.12)' }}>
+          <div className={styles.kpiIconWrapper} style={{ color: 'var(--accent)', background: 'var(--accent-soft)' }}>
             <DollarSign size={20} />
           </div>
           <div className={styles.kpiInfo}>
             <span className={styles.kpiLabel}>{selectedYear} Yıllık Tahsilat</span>
-            <span className={styles.kpiValue} style={{ color: '#818cf8' }}>
+            <span className={styles.kpiValue} style={{ color: 'var(--accent)' }}>
               {financialSummary.yearlyCollected.toLocaleString('tr-TR')} ₺
             </span>
           </div>

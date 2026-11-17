@@ -234,19 +234,8 @@ export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull
               <div className={styles.miniBarTaskMain}>
                 <button
                   type="button"
+                  className={styles.miniBarCheck}
                   onClick={() => toggleTask(currentMiniTask.id)}
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    borderRadius: '4px',
-                    border: '1.5px solid var(--border-focus)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'transparent',
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                  }}
                   title="Tamamla"
                   aria-label="Tamamla"
                 >
@@ -254,22 +243,11 @@ export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull
                 </button>
                 {currentMiniTask.priority && (
                   <span
-                    style={{
-                      width: 5,
-                      height: 5,
-                      borderRadius: '50%',
-                      flexShrink: 0,
-                      backgroundColor:
-                        currentMiniTask.priority === 'high'
-                          ? '#ef4444'
-                          : currentMiniTask.priority === 'medium'
-                          ? '#f59e0b'
-                          : '#60a5fa',
-                    }}
+                    className={`${styles.widgetPriority} ${styles[`priority${currentMiniTask.priority[0].toUpperCase()}${currentMiniTask.priority.slice(1)}`]}`}
                   />
                 )}
                 {currentMiniTask.icon && (
-                  <span style={{ fontSize: '12px', flexShrink: 0 }}>{currentMiniTask.icon}</span>
+                  <span className={styles.widgetTaskIcon}>{currentMiniTask.icon}</span>
                 )}
                 <span className={styles.miniBarTaskText} title={currentMiniTask.title}>
                   {currentMiniTask.title}
@@ -303,28 +281,12 @@ export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull
               )}
             </>
           ) : (
-            <div
-              style={{
-                fontSize: '11px',
-                color: 'var(--text-secondary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                width: '100%',
-              }}
-            >
+            <div className={styles.miniBarEmpty}>
               <span>{totalCount > 0 ? 'Tümü tamamlandı! ✨' : 'Planın boş.'}</span>
               <button
                 type="button"
                 onClick={onExpandToFull}
-                style={{
-                  fontSize: '11px',
-                  color: 'var(--accent)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: 500,
-                }}
+                className={styles.miniBarOpenButton}
               >
                 Uygulamayı Aç
               </button>
@@ -510,60 +472,22 @@ export const CompanionWidget: React.FC<CompanionWidgetProps> = ({ onExpandToFull
             todayTasks.map((t) => (
               <div
                 key={t.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '5px 6px',
-                  borderRadius: '6px',
-                  fontSize: '13px',
-                }}
+                className={`${styles.widgetTaskRow} ${t.status === 'completed' ? styles.widgetTaskRowDone : ''}`}
               >
                 <button
                   type="button"
+                  className={`${styles.widgetTaskCheck} ${t.status === 'completed' ? styles.widgetTaskCheckDone : ''}`}
                   onClick={() => toggleTask(t.id)}
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    borderRadius: '4px',
-                    border: '1.5px solid var(--border-focus)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: t.status === 'completed' ? 'var(--success)' : 'transparent',
-                    borderColor: t.status === 'completed' ? 'var(--success)' : 'var(--border-focus)',
-                    color: '#ffffff',
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                  }}
                   aria-label={t.status === 'completed' ? 'Tamamlanmadı yap' : 'Tamamla'}
                 >
                   {t.status === 'completed' && <Check size={10} strokeWidth={2.5} />}
                 </button>
                 {t.priority && (
-                  <span
-                    style={{
-                      width: 5,
-                      height: 5,
-                      borderRadius: '50%',
-                      flexShrink: 0,
-                      backgroundColor:
-                        t.priority === 'high'
-                          ? '#ef4444'
-                          : t.priority === 'medium'
-                          ? '#f59e0b'
-                          : '#60a5fa',
-                    }}
-                  />
+                  <span className={`${styles.widgetPriority} ${styles[`priority${t.priority[0].toUpperCase()}${t.priority.slice(1)}`]}`} />
                 )}
-                {t.icon && <span style={{ fontSize: '13px', flexShrink: 0 }}>{t.icon}</span>}
+                {t.icon && <span className={styles.widgetTaskIcon}>{t.icon}</span>}
                 <span
-                  style={{
-                    color: t.status === 'completed' ? 'var(--text-tertiary)' : 'var(--text-primary)',
-                    textDecoration: t.status === 'completed' ? 'line-through' : 'none',
-                    lineHeight: 1.3,
-                    wordBreak: 'break-word',
-                  }}
+                  className={`${styles.widgetTaskTitle} ${t.status === 'completed' ? styles.widgetTaskTitleDone : ''}`}
                 >
                   {t.title}
                 </span>
