@@ -13,7 +13,7 @@ if (-not $Version) {
 }
 
 if (-not $ReleaseNotes) {
-    $ReleaseNotes = "### Dali v$Version`n`n- Kurum yönetimi tam genişlikte, ayrı bir çalışma alanı olarak açılır.`n- Kurum ekranındaki renkler uygulama temasına uyum sağlar.`n- Başlangıç penceresi büyütüldü ve görev çubuğu görünürlüğü etkinleştirildi.`n- Sistem tepsisi simgesi eklendi."
+    $ReleaseNotes = "### Dali v$Version`n`n- Uygulama iyileştirmeleri ve hata d\u00FCzeltmeleri."
 }
 Write-Host "=== Dali v$Version Sürümü Hazırlanıyor ===" -ForegroundColor Cyan
 
@@ -69,7 +69,7 @@ $headers = @{
 
 $releaseBody = @{
     tag_name = "v$Version"
-    name = "Dali v$Version - Kurum Yönetimi ve Masaüstü İyileştirmeleri"
+    name = "Dali v$Version - Application Improvements"
     body = $ReleaseNotes
     draft = $false
     prerelease = $false
