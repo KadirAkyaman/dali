@@ -269,19 +269,17 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      await taskService.updateTask(
-        id,
-        {
-          title: updates.title,
-          notes: updates.notes,
-          reminder_at: updates.reminder_at,
-          sort_order: updates.sort_order,
-          icon: updates.icon,
-          priority: updates.priority,
-          subtasks: updates.subtasks,
-        },
-        todayStr
-      );
+      const cleanUpdates: Partial<Task> = {};
+      if (updates.title !== undefined) cleanUpdates.title = updates.title;
+      if (updates.notes !== undefined) cleanUpdates.notes = updates.notes;
+      if (updates.reminder_at !== undefined) cleanUpdates.reminder_at = updates.reminder_at;
+      if (updates.sort_order !== undefined) cleanUpdates.sort_order = updates.sort_order;
+      if (updates.icon !== undefined) cleanUpdates.icon = updates.icon;
+      if (updates.priority !== undefined) cleanUpdates.priority = updates.priority;
+      if (updates.subtasks !== undefined) cleanUpdates.subtasks = updates.subtasks;
+      if (updates.project_id !== undefined) cleanUpdates.project_id = updates.project_id;
+
+      await taskService.updateTask(id, cleanUpdates, todayStr);
 
       if (nextRuleId !== task.recurrence_rule_id) {
         await taskRepo.update(id, { recurrence_rule_id: nextRuleId });
@@ -299,20 +297,25 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const taskToDelete = await taskRepo.findById(id);
       if (!taskToDelete) return;
 
+      const deletedTitle = taskToDelete.title || 'Görev';
       await taskService.deleteTask(id, todayStr);
       await loadTasksForDate(selectedDate);
 
       // Geri Al (Undo) desteği
-      setFeedback(`"${taskToDelete.title}" silindi.`, async () => {
+      setFeedback(`"${deletedTitle}" silindi.`, async () => {
         await taskRepo.create({
           id: taskToDelete.id,
-          title: taskToDelete.title,
+          title: deletedTitle,
           notes: taskToDelete.notes,
           scheduled_date: taskToDelete.scheduled_date,
           reminder_at: taskToDelete.reminder_at,
           sort_order: taskToDelete.sort_order,
           created_at: taskToDelete.created_at,
           updated_at: new Date().toISOString(),
+          icon: taskToDelete.icon,
+          priority: taskToDelete.priority,
+          subtasks: taskToDelete.subtasks,
+          project_id: taskToDelete.project_id,
         });
         await loadTasksForDate(selectedDate);
         setFeedback('İşlem geri alındı.');

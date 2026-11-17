@@ -30,7 +30,7 @@ const DaliApp: React.FC = () => {
     return false;
   });
 
-  const { addTask, todayStr } = useTasks();
+  const { addTask, todayStr, setSelectedDate } = useTasks();
 
   const invokeTauri = async (command: string) => {
     try {
@@ -161,7 +161,14 @@ const DaliApp: React.FC = () => {
       onToggleWidgetMode={handleEnterWidgetMode}
     >
       {activeTab === 'today' && <TodayView />}
-      {activeTab === 'calendar' && <CalendarView />}
+      {activeTab === 'calendar' && (
+        <CalendarView
+          onOpenDayInTodayView={(dateStr) => {
+            setSelectedDate(dateStr);
+            setActiveTab('today');
+          }}
+        />
+      )}
       {activeTab === 'projects' && <ProjectsView />}
       {activeTab === 'clients' && <ClientsView />}
       {activeTab === 'focus' && <FocusView />}

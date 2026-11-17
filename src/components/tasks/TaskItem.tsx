@@ -479,6 +479,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           subtasks={subtasks}
           isReadOnly={isReadOnly}
           onChange={(newSubtasks) => onUpdate(task.id, { subtasks: newSubtasks })}
+          onClose={() => setShowSubtasks(false)}
         />
       )}
     </div>

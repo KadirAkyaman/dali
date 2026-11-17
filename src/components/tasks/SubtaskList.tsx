@@ -7,15 +7,18 @@ interface SubtaskListProps {
   subtasks: Subtask[];
   isReadOnly?: boolean;
   onChange: (subtasks: Subtask[]) => void;
+  onClose?: () => void;
 }
 
 export const SubtaskList: React.FC<SubtaskListProps> = ({
   subtasks,
   isReadOnly = false,
   onChange,
+  onClose,
 }) => {
   const [newTitle, setNewTitle] = useState('');
-  const [isAdding, setIsAdding] = useState(false);
+  // If there are no subtasks yet, open directly into input mode
+  const [isAdding, setIsAdding] = useState(subtasks.length === 0);
 
   const handleToggle = (id: string) => {
     if (isReadOnly) return;
@@ -27,13 +30,20 @@ export const SubtaskList: React.FC<SubtaskListProps> = ({
 
   const handleDelete = (id: string) => {
     if (isReadOnly) return;
-    onChange(subtasks.filter((st) => st.id !== id));
+    const updated = subtasks.filter((st) => st.id !== id);
+    onChange(updated);
+    if (updated.length === 0 && onClose) {
+      onClose();
+    }
   };
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = newTitle.trim();
-    if (!trimmed) return;
+    if (!trimmed) {
+      handleCancelAdd();
+      return;
+    }
     const newSubtask: Subtask = {
       id: crypto.randomUUID(),
       title: trimmed,
@@ -41,10 +51,27 @@ export const SubtaskList: React.FC<SubtaskListProps> = ({
     };
     onChange([...subtasks, newSubtask]);
     setNewTitle('');
+    setIsAdding(true); // continue adding next subtask seamlessly
+  };
+
+  const handleCancelAdd = () => {
+    setIsAdding(false);
+    setNewTitle('');
+    if (subtasks.length === 0 && onClose) {
+      onClose();
+    }
   };
 
   return (
-    <div className={styles.container}>
+    <div
+      className={styles.container}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.stopPropagation();
+          handleCancelAdd();
+        }
+      }}
+    >
       {subtasks.map((st) => (
         <div key={st.id} className={styles.item}>
           <button
@@ -84,12 +111,27 @@ export const SubtaskList: React.FC<SubtaskListProps> = ({
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Alt görev ekle (Enter)..."
                 onBlur={() => {
-                  if (!newTitle.trim()) setIsAdding(false);
+                  if (!newTitle.trim()) {
+                    handleCancelAdd();
+                  }
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Escape') setIsAdding(false);
+                  if (e.key === 'Escape') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleCancelAdd();
+                  }
                 }}
               />
+              <button
+                type="button"
+                className={styles.deleteBtn}
+                onClick={handleCancelAdd}
+                title="Vazgeç"
+                style={{ cursor: 'pointer' }}
+              >
+                <X size={12} />
+              </button>
             </form>
           ) : (
             <button
@@ -104,6 +146,8 @@ export const SubtaskList: React.FC<SubtaskListProps> = ({
                 cursor: 'pointer',
                 marginTop: '2px',
                 padding: '2px 0',
+                background: 'transparent',
+                border: 'none',
               }}
             >
               <Plus size={11} />

@@ -19,7 +19,11 @@ export class LocalTaskRepository implements ITaskRepository {
   private getTasks(): Task[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.TASKS);
-      return data ? JSON.parse(data) : [];
+      const parsed: Task[] = data ? JSON.parse(data) : [];
+      return parsed.map((t) => ({
+        ...t,
+        title: t.title && t.title !== 'undefined' ? t.title : 'Görev',
+      }));
     } catch {
       return [];
     }
@@ -100,9 +104,13 @@ export class LocalTaskRepository implements ITaskRepository {
       throw new Error(`Task with id ${id} not found`);
     }
 
+    const cleanUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, v]) => v !== undefined)
+    );
+
     const updatedTask: Task = {
       ...tasks[index],
-      ...updates,
+      ...cleanUpdates,
       updated_at: new Date().toISOString(),
     };
     tasks[index] = updatedTask;

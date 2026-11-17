@@ -65,8 +65,8 @@ $headers = @{
 
 $releaseBody = @{
     tag_name = "v$Version"
-    name = "Dali v$Version - Kurum Yönetimi, Projeler ve Gelişmiş Özellikler"
-    body = "### ✨ Dali v$Version - Kurum & Freelance Gelir Yönetimi ve Büyük Yenilikler`n`n- 🏢 **Kurum Yönetimi & Freelance Gelir Takibi**: Müşteriler, aylık retainer sözleşmeleri, ödeme gün aralıkları, 12 aylık matris tablosu, parçalı ödeme (taksit) girişi, fatura durumu ve günü geçen ödeme uyarı bildirimleri.`n- 📁 **Projeler & Odak Alanları**: Görevleri projelere ve alanlara (İş, Kişisel, Müşteri vb.) bağlama, görevlerde proje rozetleri ve detaylı ilerleme takibi.`n- ✅ **Alt Görevler (Subtasks)**: Görevler içinde alt kontrol listeleri ve dinamik yüzde göstergesi.`n- ⚡ **Sistem Tepsisi (Tray Menu) Hızlı Bakış**: Canlı bekleyen/tamamlanan görev sayısı takibi ve tek tıkla hızlı yakalama menüsü.`n- 📝 **Notlar & Görev Entegrasyonu**: Günün görevlerini notlara markdown kontrol listesi olarak tek tıkla aktarma ve notları göreve dönüştürme."
+    name = "Dali v$Version - Alt Görev Düzeltmeleri ve Gelişmiş Takvim İnceleme"
+    body = "### ✨ Dali v$Version - Hata Düzeltmeleri ve Takvim Gün İnceleme İyileştirmeleri`n`n- 🛠️ **Alt Görev (Subtask) & Başlık Koruması Düzeltildi**: Alt görev eklendiğinde ana görev başlığının silinmesine yol açan nesne yayma hatası düzeltildi, tüm görev alanları korunuyor.`n- ⌨️ **Alt Görev Ekleme & ESC Davranışı**: Alt görev eklerken ESC ile çıkıldığında alan anında ve temiz bir şekilde kapanıyor.`n- 🗑️ **Silme Bildirimi Güçlendirildi**: Görev silindiğinde bildirimde oluşan 'undefined silindi' hatası giderildi.`n- 📅 **Takvimde İstediğin Günü İnceleme**: Takvimde tıklanan herhangi bir günün görevleri alt panelde tam interaktif (tamamlama, silme, ekleme) olarak listeleniyor ve 'Günlük Akışta Aç' butonuyla tam planlama ekranına aktarılabiliyor."
     draft = $false
     prerelease = $false
 }
@@ -82,7 +82,7 @@ $sig = [System.IO.File]::ReadAllText((Resolve-Path $sigPath)).Trim()
 
 $latestJson = @{
     version = $Version
-    notes = "Dali v${Version} - Kurum & freelance gelir yonetimi, projeler, gelismis alt gorevler ve tray menusu eklendi."
+    notes = "Dali v${Version} - Alt gorev baslik kaybi ve ESC duzeltildi, takvim gun inceleme ve yonetim ozelligi eklendi."
     pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     platforms = @{
         "windows-x86_64" = @{

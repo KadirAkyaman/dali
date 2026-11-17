@@ -89,4 +89,29 @@ describe('TaskService & Past-Day Read-Only Rules', () => {
       'Past days are read-only'
     );
   });
+
+  it('preserves task title and existing properties when updating subtasks', async () => {
+    const task = await taskService.createTask(
+      { title: 'Ana Başlık Görevi', scheduled_date: today },
+      today
+    );
+
+    const updated = await taskService.updateTask(
+      task.id,
+      {
+        subtasks: [
+          { id: 'sub-1', title: 'Alt Adım 1', completed: false },
+          { id: 'sub-2', title: 'Alt Adım 2', completed: true },
+        ],
+      },
+      today
+    );
+
+    expect(updated.title).toBe('Ana Başlık Görevi');
+    expect(updated.subtasks?.length).toBe(2);
+
+    const fetched = await taskRepo.findById(task.id);
+    expect(fetched?.title).toBe('Ana Başlık Görevi');
+    expect(fetched?.subtasks?.length).toBe(2);
+  });
 });

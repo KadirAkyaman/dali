@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   format,
   addMonths,
@@ -12,7 +12,18 @@ import {
   isSameDay,
   parseISO,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, CalendarCheck, CheckCircle2 } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  CalendarCheck,
+  CheckCircle2,
+  Circle,
+  Trash2,
+  Clock,
+  Plus,
+  ExternalLink,
+  ListTree,
+} from 'lucide-react';
 import { useTasks } from '../../app/providers/TaskProvider';
 import { Task } from '../../types/task';
 import { formatMonthYear, isPastDate, formatDisplayDate } from '../../domain/date/dateService';
@@ -23,11 +34,11 @@ const turkishWeekdays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 const taskRepo = new LocalTaskRepository();
 
 interface CalendarViewProps {
-  onSelectDateAndGoToToday?: (dateStr: string) => void;
+  onOpenDayInTodayView?: (dateStr: string) => void;
 }
 
-export const CalendarView: React.FC<CalendarViewProps> = () => {
-  const { todayStr, addTask } = useTasks();
+export const CalendarView: React.FC<CalendarViewProps> = ({ onOpenDayInTodayView }) => {
+  const { todayStr, addTask, toggleTask, deleteTask, tasks } = useTasks();
   const [inspectedDate, setInspectedDate] = useState<string>(todayStr);
   const [inspectedTasks, setInspectedTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState<string>('');
@@ -36,16 +47,16 @@ export const CalendarView: React.FC<CalendarViewProps> = () => {
 
   const monthKey = format(currentMonth, 'yyyy-MM');
 
-  const refreshInspectedTasks = async () => {
+  const refreshInspectedTasks = useCallback(async () => {
     const list = await taskRepo.findByDate(inspectedDate);
     setInspectedTasks(list);
     const counts = await taskRepo.getTaskCountsByMonth(monthKey);
     setMonthCounts(counts);
-  };
+  }, [inspectedDate, monthKey]);
 
   useEffect(() => {
     refreshInspectedTasks();
-  }, [monthKey, inspectedDate]);
+  }, [refreshInspectedTasks, tasks]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
@@ -77,6 +88,16 @@ export const CalendarView: React.FC<CalendarViewProps> = () => {
       scheduled_date: inspectedDate,
     });
     setNewTaskTitle('');
+    await refreshInspectedTasks();
+  };
+
+  const handleToggle = async (taskId: string) => {
+    await toggleTask(taskId);
+    await refreshInspectedTasks();
+  };
+
+  const handleDelete = async (taskId: string) => {
+    await deleteTask(taskId);
     await refreshInspectedTasks();
   };
 
@@ -140,7 +161,9 @@ export const CalendarView: React.FC<CalendarViewProps> = () => {
                 ${isSelected ? styles.isSelected : ''}
               `}
               onClick={() => handleDayClick(day)}
-              title={`${formatDisplayDate(dateStr)}${activity ? ` (${activity.completed}/${activity.total} tamamlandı)` : ''}`}
+              title={`${formatDisplayDate(dateStr)}${
+                activity ? ` (${activity.completed}/${activity.total} tamamlandı)` : ''
+              }`}
             >
               <span>{format(day, 'd')}</span>
               {activity && activity.total > 0 && (
@@ -158,69 +181,128 @@ export const CalendarView: React.FC<CalendarViewProps> = () => {
       {/* Seçilen Günün Detayları */}
       <div className={styles.selectedDayDetails}>
         <div className={styles.selectedDayHeader}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CalendarCheck size={16} color="var(--accent)" />
-            <span>{formatDisplayDate(inspectedDate)}</span>
-            <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 'normal' }}>
-              ({inspectedTasks.length} görev)
+          <div className={styles.headerLeftInfo}>
+            <CalendarCheck size={18} className={styles.headerIcon} />
+            <span className={styles.headerDateText}>{formatDisplayDate(inspectedDate)}</span>
+            <span className={styles.taskCountBadge}>
+              {inspectedTasks.length} görev
             </span>
           </div>
+
+          {onOpenDayInTodayView && (
+            <button
+              type="button"
+              className={styles.openInDailyFlowBtn}
+              onClick={() => onOpenDayInTodayView(inspectedDate)}
+              title="Bu günü Günlük Akış görünümünde aç ve planla"
+            >
+              <ExternalLink size={13} />
+              <span>Günlük Akışta Aç</span>
+            </button>
+          )}
         </div>
 
         {/* Tarihe Görev Ekleme Alanı */}
-        <form onSubmit={handleCreateTaskForInspectedDate} style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+        <form onSubmit={handleCreateTaskForInspectedDate} className={styles.addTaskForm}>
           <input
             type="text"
-            placeholder={`${formatDisplayDate(inspectedDate)} için görev ekle...`}
+            placeholder={`${formatDisplayDate(inspectedDate)} için görev ekle (Enter)...`}
             value={newTaskTitle}
             onChange={(e) => setNewTaskTitle(e.target.value)}
-            style={{
-              flex: 1,
-              padding: '6px 12px',
-              borderRadius: '6px',
-              border: '1px solid var(--border)',
-              backgroundColor: 'var(--surface-subtle)',
-              fontSize: '12px',
-              color: 'var(--text-primary)',
-            }}
+            className={styles.addTaskInput}
           />
           <button
             type="submit"
-            className={styles.todayShortcut}
-            style={{ backgroundColor: 'var(--accent)', color: '#fff', fontSize: '12px', padding: '6px 12px' }}
+            className={styles.addTaskSubmitBtn}
+            disabled={!newTaskTitle.trim()}
           >
-            Ekle
+            <Plus size={14} />
+            <span>Ekle</span>
           </button>
         </form>
 
+        {/* Görev Listesi */}
         {inspectedTasks.length === 0 ? (
-          <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', fontStyle: 'italic', padding: '8px 0' }}>
-            Bu tarih için kayıtlı görev bulunmuyor.
-          </p>
+          <div className={styles.emptyDayNotice}>
+            <p>Bu tarih için henüz planlanmış bir görev bulunmuyor.</p>
+            <span>Yukarıdaki kutudan hızlıca yeni bir görev ekleyebilirsiniz.</span>
+          </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '4px' }}>
-            {inspectedTasks.map((t) => (
-              <div
-                key={t.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  backgroundColor: 'var(--surface-subtle)',
-                  fontSize: '13px',
-                  color: t.status === 'completed' ? 'var(--text-tertiary)' : 'var(--text-primary)',
-                  textDecoration: t.status === 'completed' ? 'line-through' : 'none',
-                }}
-              >
-                <CheckCircle2
-                  size={14}
-                  color={t.status === 'completed' ? 'var(--success)' : 'var(--text-tertiary)'}
-                />
-                <span>{t.title}</span>
-              </div>
-            ))}
+          <div className={styles.taskListContainer}>
+            {inspectedTasks.map((t) => {
+              const isDone = t.status === 'completed';
+              const subtasks = t.subtasks || [];
+              const completedSubtasks = subtasks.filter((s) => s.completed).length;
+
+              return (
+                <div
+                  key={t.id}
+                  className={`${styles.taskRow} ${isDone ? styles.taskRowDone : ''}`}
+                >
+                  <button
+                    type="button"
+                    className={`${styles.taskCheckbox} ${isDone ? styles.taskCheckboxDone : ''}`}
+                    onClick={() => handleToggle(t.id)}
+                    aria-label={isDone ? 'Tamamlanmadı yap' : 'Tamamla'}
+                  >
+                    {isDone ? (
+                      <CheckCircle2 size={16} />
+                    ) : (
+                      <Circle size={16} />
+                    )}
+                  </button>
+
+                  <div className={styles.taskTitleGroup}>
+                    <span className={`${styles.taskTitle} ${isDone ? styles.taskTitleDone : ''}`}>
+                      {t.title}
+                    </span>
+
+                    <div className={styles.taskMetaRow}>
+                      {t.reminder_at && (
+                        <span className={styles.taskMetaTag}>
+                          <Clock size={11} />
+                          {t.reminder_at}
+                        </span>
+                      )}
+
+                      {subtasks.length > 0 && (
+                        <span className={styles.taskMetaTag}>
+                          <ListTree size={11} />
+                          {completedSubtasks}/{subtasks.length}
+                        </span>
+                      )}
+
+                      {t.priority && (
+                        <span
+                          className={`${styles.taskMetaTag} ${
+                            t.priority === 'high'
+                              ? styles.priorityHigh
+                              : t.priority === 'medium'
+                              ? styles.priorityMedium
+                              : styles.priorityLow
+                          }`}
+                        >
+                          {t.priority === 'high'
+                            ? 'Yüksek'
+                            : t.priority === 'medium'
+                            ? 'Orta'
+                            : 'Düşük'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={styles.deleteTaskBtn}
+                    onClick={() => handleDelete(t.id)}
+                    title="Görevi sil"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
