@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Minus, Square, X, Copy } from 'lucide-react';
 import styles from './Titlebar.module.css';
 
-export const Titlebar: React.FC = () => {
+export const Titlebar: React.FC<{ immersive?: boolean }> = ({ immersive = false }) => {
   const [isMaximized, setIsMaximized] = useState(false);
 
   const invokeTauri = async (command: string) => {
@@ -41,7 +41,7 @@ export const Titlebar: React.FC = () => {
   };
 
   return (
-    <header className={styles.titlebar} data-tauri-drag-region>
+    <header className={`${styles.titlebar} ${immersive ? styles.immersive : ''}`} data-tauri-drag-region>
       <div className={styles.leftGroup}>
         <div className={styles.brandDot} />
         <span className={styles.title}>dali</span>

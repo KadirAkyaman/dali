@@ -141,7 +141,9 @@ pub fn run() {
             let tray_menu = Menu::with_items(app, &[&quick_add_item, &show_item, &quit_item])?;
 
             // Sistem tepsisi ikonu oluştur
+            let tray_icon = tauri::include_image!("icons/128x128.png");
             let _tray = TrayIconBuilder::with_id("main_tray")
+                .icon(tray_icon)
                 .menu(&tray_menu)
                 .tooltip("Dali — Bugüne yer aç")
                 .on_menu_event(|app, event| match event.id.as_ref() {

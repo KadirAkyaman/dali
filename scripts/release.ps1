@@ -1,5 +1,6 @@
-﻿param (
-    [string]$Version
+param (
+    [string]$Version,
+    [string]$ReleaseNotes
 )
 
 if (-not $Version) {
@@ -11,6 +12,9 @@ if (-not $Version) {
     exit 1
 }
 
+if (-not $ReleaseNotes) {
+    $ReleaseNotes = "### Dali v$Version`n`n- Kurum yönetimi tam genişlikte, ayrı bir çalışma alanı olarak açılır.`n- Kurum ekranındaki renkler uygulama temasına uyum sağlar.`n- Başlangıç penceresi büyütüldü ve görev çubuğu görünürlüğü etkinleştirildi.`n- Sistem tepsisi simgesi eklendi."
+}
 Write-Host "=== Dali v$Version Sürümü Hazırlanıyor ===" -ForegroundColor Cyan
 
 # 1. package.json güncelle
@@ -65,8 +69,8 @@ $headers = @{
 
 $releaseBody = @{
     tag_name = "v$Version"
-    name = "Dali v$Version - Alt Görev Düzeltmeleri ve Gelişmiş Takvim İnceleme"
-    body = "### ✨ Dali v$Version - Hata Düzeltmeleri ve Takvim Gün İnceleme İyileştirmeleri`n`n- 🛠️ **Alt Görev (Subtask) & Başlık Koruması Düzeltildi**: Alt görev eklendiğinde ana görev başlığının silinmesine yol açan nesne yayma hatası düzeltildi, tüm görev alanları korunuyor.`n- ⌨️ **Alt Görev Ekleme & ESC Davranışı**: Alt görev eklerken ESC ile çıkıldığında alan anında ve temiz bir şekilde kapanıyor.`n- 🗑️ **Silme Bildirimi Güçlendirildi**: Görev silindiğinde bildirimde oluşan 'undefined silindi' hatası giderildi.`n- 📅 **Takvimde İstediğin Günü İnceleme**: Takvimde tıklanan herhangi bir günün görevleri alt panelde tam interaktif (tamamlama, silme, ekleme) olarak listeleniyor ve 'Günlük Akışta Aç' butonuyla tam planlama ekranına aktarılabiliyor."
+    name = "Dali v$Version - Kurum Yönetimi ve Masaüstü İyileştirmeleri"
+    body = $ReleaseNotes
     draft = $false
     prerelease = $false
 }
@@ -82,7 +86,7 @@ $sig = [System.IO.File]::ReadAllText((Resolve-Path $sigPath)).Trim()
 
 $latestJson = @{
     version = $Version
-    notes = "Dali v${Version} - Alt gorev baslik kaybi ve ESC duzeltildi, takvim gun inceleme ve yonetim ozelligi eklendi."
+    notes = $ReleaseNotes
     pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     platforms = @{
         "windows-x86_64" = @{

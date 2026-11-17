@@ -1,7 +1,7 @@
 {
     "$schema":  "https://schema.tauri.app/config/2",
     "productName":  "Dali",
-    "version":  "0.9.5",
+    "version":  "0.9.6",
     "identifier":  "com.dali.desktop",
     "build":  {
                   "beforeDevCommand":  "npm run dev",
@@ -15,11 +15,12 @@
                                 {
                                     "label":  "main",
                                     "title":  "Dali",
-                                    "width":  1000,
-                                    "height":  720,
-                                    "minWidth":  260,
-                                    "minHeight":  110,
+                                    "width":  1280,
+                                    "height":  840,
+                                    "minWidth":  900,
+                                    "minHeight":  600,
                                     "resizable":  true,
+                                    "skipTaskbar":  false,
                                     "decorations":  false,
                                     "center":  true,
                                     "transparent":  true

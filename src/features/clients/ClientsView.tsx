@@ -12,6 +12,7 @@ import {
   TrendingUp,
   ChevronLeft,
   ChevronRight,
+  ArrowLeft,
 } from 'lucide-react';
 import { Client, OverdueAlert, CURRENCY_SYMBOLS, MONTH_NAMES_TR } from '../../types/client';
 import { localClientRepository } from '../../repositories/localClientRepository';
@@ -20,7 +21,7 @@ import { PaymentRecordModal } from '../../components/clients/PaymentRecordModal'
 import { OverdueAlertBanner } from '../../components/clients/OverdueAlertBanner';
 import styles from './ClientsView.module.css';
 
-export const ClientsView: React.FC = () => {
+export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -169,6 +170,11 @@ export const ClientsView: React.FC = () => {
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerTitleArea}>
+          {onBack && (
+            <button type="button" className={styles.backButton} onClick={onBack} aria-label="Ana sayfaya dön">
+              <ArrowLeft size={18} />
+            </button>
+          )}
           <div className={styles.iconBadge}>
             <Building2 size={24} />
           </div>

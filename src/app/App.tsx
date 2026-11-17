@@ -159,6 +159,7 @@ const DaliApp: React.FC = () => {
       activeTab={activeTab}
       onTabChange={setActiveTab}
       onToggleWidgetMode={handleEnterWidgetMode}
+      immersive={activeTab === 'clients'}
     >
       {activeTab === 'today' && <TodayView />}
       {activeTab === 'calendar' && (
@@ -170,7 +171,7 @@ const DaliApp: React.FC = () => {
         />
       )}
       {activeTab === 'projects' && <ProjectsView />}
-      {activeTab === 'clients' && <ClientsView />}
+      {activeTab === 'clients' && <ClientsView onBack={() => setActiveTab('today')} />}
       {activeTab === 'focus' && <FocusView />}
       {activeTab === 'habits' && <HabitsView />}
       {activeTab === 'notes' && <NotesView />}
