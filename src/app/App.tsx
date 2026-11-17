@@ -14,6 +14,8 @@ import { AnalyticsView } from '../features/analytics/AnalyticsView';
 import { CalendarView } from '../features/calendar/CalendarView';
 import { CompletedView } from '../features/completed/CompletedView';
 import { SettingsView } from '../features/settings/SettingsView';
+import { ProjectsView } from '../features/projects/ProjectsView';
+import { ClientsView } from '../features/clients/ClientsView';
 import { CompanionWidget } from '../features/widget/CompanionWidget';
 import { QuickCaptureModal } from '../components/capture/QuickCaptureModal';
 
@@ -159,12 +161,14 @@ const DaliApp: React.FC = () => {
       onToggleWidgetMode={handleEnterWidgetMode}
     >
       {activeTab === 'today' && <TodayView />}
+      {activeTab === 'calendar' && <CalendarView />}
+      {activeTab === 'projects' && <ProjectsView />}
+      {activeTab === 'clients' && <ClientsView />}
       {activeTab === 'focus' && <FocusView />}
       {activeTab === 'habits' && <HabitsView />}
       {activeTab === 'notes' && <NotesView />}
       {activeTab === 'routines' && <RoutinesView />}
       {activeTab === 'analytics' && <AnalyticsView />}
-      {activeTab === 'calendar' && <CalendarView />}
       {activeTab === 'completed' && <CompletedView />}
       {activeTab === 'settings' && <SettingsView />}
 

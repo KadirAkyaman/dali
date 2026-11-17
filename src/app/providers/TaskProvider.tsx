@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { invoke, isTauri } from '@tauri-apps/api/core';
 import { Task, CreateTaskDTO, UpdateTaskDTO } from '../../types/task';
 import { TaskService } from '../../domain/task/taskService';
 import { RolloverService } from '../../domain/rollover/rolloverService';
@@ -175,6 +176,19 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     loadTasksForDate(selectedDate);
   }, [selectedDate, loadTasksForDate]);
+
+  // Sistem tepsisi durum güncellemesi (Item 4: Tray Menu Hızlı Bakış)
+  useEffect(() => {
+    if (!isTauri()) return;
+    const todayTasks = tasks.filter((t) => t.scheduled_date === todayStr);
+    const pendingCount = todayTasks.filter((t) => t.status !== 'completed').length;
+    const completedCount = todayTasks.filter((t) => t.status === 'completed').length;
+
+    invoke('update_tray_status', {
+      pendingCount,
+      completedCount,
+    }).catch(() => {});
+  }, [tasks, todayStr]);
 
   const isReadOnly = isPastDate(selectedDate, todayStr);
 

@@ -20,10 +20,13 @@ import { ModernIconPicker } from '../ui/ModernIconPicker';
 import { ModernPrioritySelect } from '../ui/ModernPrioritySelect';
 import { SubtaskList } from './SubtaskList';
 import { DynamicIcon } from '../ui/DynamicIcon';
+import { ModernProjectSelect } from '../ui/ModernProjectSelect';
 import { LocalRecurrenceRepository } from '../../repositories/localRepository';
+import { LocalProjectRepository } from '../../repositories/localProjectRepository';
 import styles from './TaskItem.module.css';
 
 const recurrenceRepo = new LocalRecurrenceRepository();
+const projectRepo = new LocalProjectRepository();
 
 interface TaskItemProps {
   task: Task;
@@ -40,6 +43,7 @@ interface TaskItemProps {
       recurrence_frequency?: RecurrenceFrequency | null;
       icon?: string | null;
       priority?: TaskPriority | null;
+      project_id?: string | null;
       subtasks?: Subtask[];
     }
   ) => void;
@@ -83,6 +87,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   const [editRepeat, setEditRepeat] = useState<RecurrenceFrequency | ''>('');
   const [editIcon, setEditIcon] = useState(task.icon || '');
   const [editPriority, setEditPriority] = useState<TaskPriority | ''>(task.priority || '');
+  const [editProjectId, setEditProjectId] = useState<string | null>(task.project_id || null);
   const [showSparkles, setShowSparkles] = useState(false);
   const sparklesTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -102,6 +107,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
       setEditTime(task.reminder_at || '');
       setEditIcon(task.icon || '');
       setEditPriority(task.priority || '');
+      setEditProjectId(task.project_id || null);
       if (task.recurrence_rule_id) {
         recurrenceRepo.findById(task.recurrence_rule_id).then((rule) => {
           if (rule) {
@@ -135,6 +141,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         recurrence_frequency: editRepeat ? (editRepeat as RecurrenceFrequency) : null,
         icon: editIcon || null,
         priority: editPriority || null,
+        project_id: editProjectId || null,
       });
     } else {
       setEditTitle(task.title);
@@ -142,6 +149,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
       setEditTime(task.reminder_at || '');
       setEditIcon(task.icon || '');
       setEditPriority(task.priority || '');
+      setEditProjectId(task.project_id || null);
     }
     setIsEditing(false);
   };
@@ -152,6 +160,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     setEditTime(task.reminder_at || '');
     setEditIcon(task.icon || '');
     setEditPriority(task.priority || '');
+    setEditProjectId(task.project_id || null);
     setIsEditing(false);
   };
 
@@ -165,6 +174,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
   const subtasks = task.subtasks || [];
   const completedSubtasksCount = subtasks.filter((s) => s.completed).length;
+  const project = task.project_id ? projectRepo.getProjects().find((p) => p.id === task.project_id) : null;
 
   const getPriorityDotClass = (p?: TaskPriority | null) => {
     if (p === 'low') return styles.priorityLow;
@@ -301,6 +311,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                   <ModernPrioritySelect value={editPriority} onChange={setEditPriority} />
                   <ModernTimePicker value={editTime} onChange={setEditTime} />
                   <ModernRepeatSelect value={editRepeat} onChange={setEditRepeat} />
+                  <ModernProjectSelect value={editProjectId} onChange={setEditProjectId} />
                 </div>
                 <div className={styles.editActionsGroup}>
                   <button
@@ -333,6 +344,20 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 {task.icon && (
                   <span className={styles.taskIconBadge} title="Kategori">
                     <DynamicIcon name={task.icon} size={12} />
+                  </span>
+                )}
+
+                {project && (
+                  <span
+                    className={styles.projectBadge}
+                    style={{
+                      borderColor: `${project.color}50`,
+                      backgroundColor: `${project.color}15`,
+                    }}
+                    title={`Proje: ${project.name} (${project.area})`}
+                  >
+                    <span className={styles.projectBadgeDot} style={{ backgroundColor: project.color }} />
+                    <span>{project.name}</span>
                   </span>
                 )}
 

@@ -26,6 +26,7 @@ export interface Task {
   recurrence_rule_id: string | null;
   icon?: string | null;
   priority?: TaskPriority | null;
+  project_id?: string | null;
   subtasks?: Subtask[];
 }
 
@@ -57,6 +58,7 @@ export interface CreateTaskDTO {
   sort_order?: number;
   icon?: string | null;
   priority?: TaskPriority | null;
+  project_id?: string | null;
   subtasks?: Subtask[];
 }
 
@@ -68,5 +70,6 @@ export interface UpdateTaskDTO {
   sort_order?: number;
   icon?: string | null;
   priority?: TaskPriority | null;
+  project_id?: string | null;
   subtasks?: Subtask[];
 }

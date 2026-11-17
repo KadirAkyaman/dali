@@ -10,10 +10,23 @@ import {
   CheckCircle2,
   Settings2,
   Minimize2,
+  FolderKanban,
+  Building2,
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
-export type ActiveTab = 'today' | 'focus' | 'habits' | 'notes' | 'routines' | 'analytics' | 'calendar' | 'completed' | 'settings';
+export type ActiveTab =
+  | 'today'
+  | 'calendar'
+  | 'projects'
+  | 'clients'
+  | 'focus'
+  | 'habits'
+  | 'notes'
+  | 'routines'
+  | 'analytics'
+  | 'completed'
+  | 'settings';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -42,6 +55,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onTogg
           >
             <CalendarDays className={styles.navItemIcon} />
             <span>Takvim</span>
+          </button>
+
+          <button
+            className={`${styles.navItem} ${activeTab === 'projects' ? styles.navItemActive : ''}`}
+            onClick={() => onTabChange('projects')}
+            aria-label="Projeler"
+          >
+            <FolderKanban className={styles.navItemIcon} />
+            <span>Projeler</span>
+          </button>
+
+          <button
+            className={`${styles.navItem} ${activeTab === 'clients' ? styles.navItemActive : ''}`}
+            onClick={() => onTabChange('clients')}
+            aria-label="Kurum Yönetimi"
+          >
+            <Building2 className={styles.navItemIcon} />
+            <span>Kurum Yönetimi</span>
           </button>
 
           <button

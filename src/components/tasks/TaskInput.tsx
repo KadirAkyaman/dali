@@ -6,6 +6,7 @@ import { ModernTimePicker } from '../ui/ModernTimePicker';
 import { ModernRepeatSelect } from '../ui/ModernRepeatSelect';
 import { ModernIconPicker } from '../ui/ModernIconPicker';
 import { ModernPrioritySelect } from '../ui/ModernPrioritySelect';
+import { ModernProjectSelect } from '../ui/ModernProjectSelect';
 import styles from './TaskInput.module.css';
 
 interface TaskInputProps {
@@ -14,7 +15,8 @@ interface TaskInputProps {
     reminderAt?: string | null,
     recurrenceFrequency?: RecurrenceFrequency | null,
     icon?: string | null,
-    priority?: TaskPriority | null
+    priority?: TaskPriority | null,
+    projectId?: string | null
   ) => Promise<void>;
   isReadOnly: boolean;
 }
@@ -26,6 +28,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({ onAddTask, isReadOnly }) =
   const [recurrence, setRecurrence] = useState<RecurrenceFrequency | ''>('');
   const [icon, setIcon] = useState('');
   const [priority, setPriority] = useState<TaskPriority | ''>('');
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -60,6 +63,7 @@ export const TaskInput: React.FC<TaskInputProps> = ({ onAddTask, isReadOnly }) =
     setRecurrence('');
     setIcon('');
     setPriority('');
+    setProjectId(null);
     setIsOpen(false);
   };
 
@@ -75,13 +79,15 @@ export const TaskInput: React.FC<TaskInputProps> = ({ onAddTask, isReadOnly }) =
         reminderTime || null,
         recurrence || null,
         icon || null,
-        priority || null
+        priority || null,
+        projectId || null
       );
       setTitle('');
       setReminderTime('');
       setRecurrence('');
       setIcon('');
       setPriority('');
+      setProjectId(null);
       // Bir sonraki görev için girişi hazır tut
       inputRef.current?.focus();
     } catch {
@@ -149,6 +155,11 @@ export const TaskInput: React.FC<TaskInputProps> = ({ onAddTask, isReadOnly }) =
             <ModernRepeatSelect
               value={recurrence}
               onChange={setRecurrence}
+            />
+
+            <ModernProjectSelect
+              value={projectId}
+              onChange={setProjectId}
             />
           </div>
 

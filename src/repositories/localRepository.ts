@@ -85,6 +85,7 @@ export class LocalTaskRepository implements ITaskRepository {
       recurrence_rule_id: taskData.recurrence_rule_id || null,
       icon: taskData.icon || null,
       priority: taskData.priority || null,
+      project_id: taskData.project_id || null,
       subtasks: taskData.subtasks || [],
     };
     tasks.push(newTask);

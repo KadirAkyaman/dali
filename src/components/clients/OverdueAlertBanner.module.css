@@ -1,0 +1,167 @@
+.container {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(245, 158, 11, 0.08) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  border-radius: 14px;
+  padding: 1.15rem 1.35rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: 0 4px 20px -4px rgba(239, 68, 68, 0.15);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.titleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.alertIconPulse {
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulseIcon 2s infinite ease-in-out;
+}
+
+@keyframes pulseIcon {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.8; }
+}
+
+.title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f87171;
+  letter-spacing: -0.01em;
+}
+
+.subtext {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #cbd5e1);
+}
+
+.alertList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.alertCard {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.alertCard:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  transform: translateY(-1px);
+}
+
+.cardLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.clientInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.clientName {
+  font-size: 0.92rem;
+  color: var(--text-main, #f0f0f2);
+  font-weight: 700;
+}
+
+.monthTag {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary, #cbd5e1);
+}
+
+.overdueDetails {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.daysOverdue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #f87171;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.15);
+  padding: 0.15rem 0.45rem;
+  border-radius: 5px;
+}
+
+.dateRule {
+  color: var(--text-secondary, #94a3b8);
+}
+
+.cardRight {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.amountBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.amountLabel {
+  font-size: 0.68rem;
+  color: var(--text-secondary, #94a3b8);
+  text-transform: uppercase;
+}
+
+.amountVal {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fca5a5;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.actionBtn:hover {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}

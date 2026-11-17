@@ -65,8 +65,8 @@ $headers = @{
 
 $releaseBody = @{
     tag_name = "v$Version"
-    name = "Dali v$Version"
-    body = "### ✨ Dali v$Version - Odaklanma Modu Temizliği & İyileştirmeler`n`n- 🧹 **Zen Odak HUD Modu Tamamen Kaldırıldı**: Kullanıcı geri bildirimi doğrultusunda ekranın üstündeki gereksiz odaklanma barı ve kısayolu tamamen kaldırıldı; sistem sadeleştirildi.`n- ⚡ **Global Quick Capture (Ctrl + Space)**: Görev ve plan oluşturma akışı en saf ve akıcı haliyle çalışmaya devam ediyor.`n- 💎 **Kararlılık & Performans**: Tüm arka uç kancaları ve gereksiz bileşenler temizlendi."
+    name = "Dali v$Version - Kurum Yönetimi, Projeler ve Gelişmiş Özellikler"
+    body = "### ✨ Dali v$Version - Kurum & Freelance Gelir Yönetimi ve Büyük Yenilikler`n`n- 🏢 **Kurum Yönetimi & Freelance Gelir Takibi**: Müşteriler, aylık retainer sözleşmeleri, ödeme gün aralıkları, 12 aylık matris tablosu, parçalı ödeme (taksit) girişi, fatura durumu ve günü geçen ödeme uyarı bildirimleri.`n- 📁 **Projeler & Odak Alanları**: Görevleri projelere ve alanlara (İş, Kişisel, Müşteri vb.) bağlama, görevlerde proje rozetleri ve detaylı ilerleme takibi.`n- ✅ **Alt Görevler (Subtasks)**: Görevler içinde alt kontrol listeleri ve dinamik yüzde göstergesi.`n- ⚡ **Sistem Tepsisi (Tray Menu) Hızlı Bakış**: Canlı bekleyen/tamamlanan görev sayısı takibi ve tek tıkla hızlı yakalama menüsü.`n- 📝 **Notlar & Görev Entegrasyonu**: Günün görevlerini notlara markdown kontrol listesi olarak tek tıkla aktarma ve notları göreve dönüştürme."
     draft = $false
     prerelease = $false
 }
@@ -82,7 +82,7 @@ $sig = [System.IO.File]::ReadAllText((Resolve-Path $sigPath)).Trim()
 
 $latestJson = @{
     version = $Version
-    notes = "Dali v${Version} - Odaklanma modu tamamen kaldirildi, saf minimalist gunluk planlayici deneyimi saglandi."
+    notes = "Dali v${Version} - Kurum & freelance gelir yonetimi, projeler, gelismis alt gorevler ve tray menusu eklendi."
     pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     platforms = @{
         "windows-x86_64" = @{

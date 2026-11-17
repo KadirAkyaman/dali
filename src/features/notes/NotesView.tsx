@@ -46,7 +46,7 @@ const DEFAULT_INITIAL_NOTES: DaliNote[] = [
 ];
 
 export const NotesView: React.FC = () => {
-  const { todayStr, addTask } = useTasks();
+  const { todayStr, addTask, tasks } = useTasks();
 
   // Load collection of notes from localStorage
   const [notes, setNotes] = useState<DaliNote[]>(() => {
@@ -361,6 +361,25 @@ export const NotesView: React.FC = () => {
     setIsConvertOpen(false);
   };
 
+  const handleImportTodayTasks = () => {
+    if (!activeNote) return;
+    const todayTasks = tasks.filter((t) => t.scheduled_date === todayStr);
+    if (todayTasks.length === 0) {
+      alert('Bugün için kayıtlı herhangi bir görev bulunmuyor.');
+      return;
+    }
+    const taskLines = todayTasks
+      .map((t) => `- [${t.status === 'completed' ? 'x' : ' '}] ${t.title}`)
+      .join('\n');
+    const snippet = `\n\n### 📋 Bugünkü Görevler (${formatDisplayDate(todayStr)})\n${taskLines}\n`;
+    const newContent = activeNote.content + snippet;
+    setNotes((prev) =>
+      prev.map((n) =>
+        n.id === activeNote.id ? { ...n, content: newContent, updatedAt: Date.now() } : n
+      )
+    );
+  };
+
   // Stats
   const charCount = activeNote?.content.length || 0;
   const wordCount = activeNote?.content.trim()
@@ -644,6 +663,16 @@ export const NotesView: React.FC = () => {
                   >
                     <ListPlus size={12} />
                     <span>Göreve Dönüştür</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={styles.actionPill}
+                    onClick={handleImportTodayTasks}
+                    title="Bugünün görevlerini bu nota markdown kontrol listesi olarak ekle"
+                  >
+                    <CheckSquare size={12} />
+                    <span>Günün Görevlerini Ekle</span>
                   </button>
 
                   <button

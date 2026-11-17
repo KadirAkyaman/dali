@@ -312,7 +312,8 @@ export const TodayView: React.FC = () => {
               reminderAt?: string | null,
               recurrenceFrequency?: RecurrenceFrequency | null,
               icon?: string | null,
-              priority?: TaskPriority | null
+              priority?: TaskPriority | null,
+              projectId?: string | null
             ) =>
               addTask({
                 title,
@@ -320,6 +321,7 @@ export const TodayView: React.FC = () => {
                 recurrence_frequency: recurrenceFrequency,
                 icon: icon || null,
                 priority: priority || null,
+                project_id: projectId || null,
               })
             }
             isReadOnly={isReadOnly}

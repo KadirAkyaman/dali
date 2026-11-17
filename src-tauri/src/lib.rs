@@ -88,6 +88,19 @@ fn exit_capture_overlay(window: Window, was_maximized: bool) -> Result<(), Strin
 }
 
 #[tauri::command]
+fn update_tray_status(app: AppHandle, pending_count: usize, completed_count: usize) -> Result<(), String> {
+    if let Some(tray) = app.tray_by_id("main_tray") {
+        let tooltip = if pending_count == 0 {
+            "Dali — Harika! Tüm görevler tamamlandı ✨".to_string()
+        } else {
+            format!("Dali — {} bekleyen, {} tamamlanan görev", pending_count, completed_count)
+        };
+        let _ = tray.set_tooltip(Some(tooltip));
+    }
+    Ok(())
+}
+
+#[tauri::command]
 fn exit_app(app: AppHandle) {
     app.exit(0);
 }
@@ -122,15 +135,24 @@ pub fn run() {
             let _ = app.global_shortcut().register("Ctrl+Space");
             let _ = app.global_shortcut().register("CommandOrControl+Space");
             // Sistem tepsisi menüsü oluştur
+            let quick_add_item = MenuItem::with_id(app, "quick_add", "⚡ Hızlı Görev Ekle (Ctrl+Space)", true, None::<&str>)?;
             let show_item = MenuItem::with_id(app, "show", "Dali'yi Aç", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Çıkış", true, None::<&str>)?;
-            let tray_menu = Menu::with_items(app, &[&show_item, &quit_item])?;
+            let tray_menu = Menu::with_items(app, &[&quick_add_item, &show_item, &quit_item])?;
 
             // Sistem tepsisi ikonu oluştur
-            let _tray = TrayIconBuilder::new()
+            let _tray = TrayIconBuilder::with_id("main_tray")
                 .menu(&tray_menu)
                 .tooltip("Dali — Bugüne yer aç")
                 .on_menu_event(|app, event| match event.id.as_ref() {
+                    "quick_add" => {
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.unminimize();
+                            let _ = window.set_focus();
+                            let _ = window.emit("trigger-quick-capture", ());
+                        }
+                    }
                     "show" => {
                         if let Some(window) = app.get_webview_window("main") {
                             let _ = window.show();
@@ -171,6 +193,7 @@ pub fn run() {
             set_always_on_top,
             enter_capture_overlay,
             exit_capture_overlay,
+            update_tray_status,
             exit_app
         ])
         .run(tauri::generate_context!())

@@ -1,0 +1,517 @@
+.container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  color: var(--text-main, #f0f0f2);
+  min-height: calc(100vh - 80px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.headerTitleArea {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.iconBadge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--color-accent, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageTitle {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--text-main, #f0f0f2);
+}
+
+.pageSubtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0.2rem 0 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.yearSelector {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  padding: 0.3rem 0.5rem;
+}
+
+.yearNavBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.yearNavBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main, #f0f0f2);
+}
+
+.yearDisplay {
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0 0.5rem;
+  color: var(--text-main, #f0f0f2);
+}
+
+.addClientBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--color-accent, #6366f1);
+  color: #fff;
+  border: none;
+  padding: 0.65rem 1.15rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  transition: all 0.15s;
+}
+
+.addClientBtn:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+/* KPI Cards */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.kpiCard {
+  background: var(--bg-surface, rgba(255, 255, 255, 0.025));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  border-radius: 14px;
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.kpiIconWrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpiInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.kpiLabel {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-secondary, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpiValue {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* Filter & Search Bar */
+.filterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 280px;
+  flex: 1;
+  max-width: 420px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.85rem;
+  color: var(--text-secondary, #64748b);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.6rem 0.85rem 0.6rem 2.4rem;
+  background: var(--bg-input, rgba(0, 0, 0, 0.2));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  color: var(--text-main, #f0f0f2);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.searchInput:focus {
+  border-color: var(--color-accent, #6366f1);
+}
+
+.statusChips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filterChip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.07));
+  color: var(--text-secondary, #94a3b8);
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filterChip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main, #f0f0f2);
+}
+
+.activeChip {
+  background: rgba(99, 102, 241, 0.18) !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  color: #818cf8 !important;
+}
+
+/* 12-Month Table */
+.tableCard {
+  background: var(--bg-surface, rgba(255, 255, 255, 0.025));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.tableScrollWrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.matrixTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.82rem;
+  text-align: left;
+}
+
+.matrixTable th {
+  padding: 0.85rem 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-secondary, #94a3b8);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  white-space: nowrap;
+}
+
+.stickyColHeader {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: var(--bg-surface, #18181c) !important;
+  min-width: 220px;
+}
+
+.rangeColHeader {
+  min-width: 140px;
+}
+
+.monthHeader {
+  text-align: center;
+  min-width: 76px;
+}
+
+.totalColHeader {
+  text-align: right;
+  min-width: 110px;
+}
+
+.actionsColHeader {
+  text-align: center;
+  min-width: 70px;
+}
+
+.clientRow {
+  transition: background 0.15s;
+}
+
+.clientRow:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.clientRow td {
+  padding: 0.85rem 0.75rem;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.04));
+  vertical-align: middle;
+}
+
+.stickyCol {
+  position: sticky;
+  left: 0;
+  background: var(--bg-surface, #18181c);
+  z-index: 5;
+  box-shadow: 4px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.clientCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.clientCellMain {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.clientCellName {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-main, #f0f0f2);
+}
+
+.clientCellRetainer {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--color-accent, #6366f1);
+}
+
+.clientContact {
+  font-size: 0.73rem;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.clientNotes {
+  font-size: 0.7rem;
+  color: var(--text-secondary, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.rangeCell {
+  white-space: nowrap;
+}
+
+.rangeBadge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.monthCell {
+  text-align: center;
+  cursor: pointer;
+  padding: 0.5rem 0.35rem !important;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: 100%;
+  min-height: 28px;
+  transition: all 0.15s;
+}
+
+.statusPaid {
+  background: rgba(16, 185, 129, 0.14);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.statusPaid:hover {
+  background: rgba(16, 185, 129, 0.25);
+}
+
+.statusPartial {
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.statusPartial:hover {
+  background: rgba(245, 158, 11, 0.25);
+}
+
+.statusOverdue {
+  background: rgba(239, 68, 68, 0.16);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  animation: pulseOverdue 2s infinite ease-in-out;
+}
+
+@keyframes pulseOverdue {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.statusOverdue:hover {
+  background: rgba(239, 68, 68, 0.28);
+}
+
+.statusPending {
+  background: transparent;
+  color: var(--text-secondary, #475569);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.statusPending:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary, #94a3b8);
+}
+
+.pendingDot {
+  font-size: 0.85rem;
+}
+
+.statusIcon {
+  flex-shrink: 0;
+}
+
+.totalCell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.yearlyTotalText {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #10b981;
+}
+
+.actionsCell {
+  text-align: center;
+}
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.rowActionBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #94a3b8);
+  padding: 0.35rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.rowActionBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main, #f0f0f2);
+}
+
+.deleteActionBtn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.emptyTable {
+  padding: 4rem 2rem !important;
+  text-align: center;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.emptyIcon {
+  color: var(--text-secondary, #475569);
+}
+
+.emptyTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.emptyDesc {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #94a3b8);
+  max-width: 400px;
+  margin: 0 0 0.5rem;
+}
+
+.bottomSpacer {
+  height: 40px;
+}
