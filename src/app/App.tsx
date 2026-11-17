@@ -16,12 +16,10 @@ import { CompletedView } from '../features/completed/CompletedView';
 import { SettingsView } from '../features/settings/SettingsView';
 import { CompanionWidget } from '../features/widget/CompanionWidget';
 import { QuickCaptureModal } from '../components/capture/QuickCaptureModal';
-import { ZenFocusOverlay } from '../components/focus/ZenFocusOverlay';
 
 const DaliApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('today');
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
-  const [isZenFocusOpen, setIsZenFocusOpen] = useState(false);
   const [isWidgetMode, setIsWidgetMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -85,42 +83,16 @@ const DaliApp: React.FC = () => {
     }
   }, [wasMaxBeforeCapture]);
 
-  const handleOpenZenFocus = useCallback(async () => {
-    setIsZenFocusOpen(true);
-    if (isTauri()) {
-      try {
-        await invoke('enter_zen_fullscreen');
-      } catch {
-        // web fallback
-      }
-    }
-  }, []);
-
-  const handleCloseZenFocus = useCallback(async () => {
-    setIsZenFocusOpen(false);
-    if (isTauri()) {
-      try {
-        await invoke('exit_zen_fullscreen');
-      } catch {
-        // web fallback
-      }
-    }
-  }, []);
-
-  // Tauri Global Shortcut Event Dinleyicileri (Ctrl+Space ve Ctrl+.)
+  // Tauri Global Shortcut Event Dinleyicileri (Ctrl+Space)
   useEffect(() => {
     if (!isTauri()) return;
 
     let unlistenCapture: (() => void) | undefined;
-    let unlistenFocus: (() => void) | undefined;
 
     const setupTauriEvents = async () => {
       try {
         unlistenCapture = await listen('trigger-quick-capture', () => {
           handleOpenQuickCapture();
-        });
-        unlistenFocus = await listen('trigger-zen-focus', () => {
-          handleOpenZenFocus();
         });
       } catch (err) {
         console.warn('Tauri event dinleyicisi başlatılamadı:', err);
@@ -131,9 +103,8 @@ const DaliApp: React.FC = () => {
 
     return () => {
       if (unlistenCapture) unlistenCapture();
-      if (unlistenFocus) unlistenFocus();
     };
-  }, [handleOpenQuickCapture, handleOpenZenFocus]);
+  }, [handleOpenQuickCapture]);
 
   // Genel Klavye Kısayolları (Ctrl+Space, Ctrl+., Ctrl+1, Ctrl+2, Ctrl+3, Ctrl+,, Ctrl+M)
   useEffect(() => {
@@ -145,13 +116,6 @@ const DaliApp: React.FC = () => {
             handleCloseQuickCapture();
           } else {
             handleOpenQuickCapture();
-          }
-        } else if (e.key === '.' || e.code === 'Period') {
-          e.preventDefault();
-          if (isZenFocusOpen) {
-            handleCloseZenFocus();
-          } else {
-            handleOpenZenFocus();
           }
         } else if (e.key === '1') {
           e.preventDefault();
@@ -210,14 +174,6 @@ const DaliApp: React.FC = () => {
         todayStr={todayStr}
         onClose={handleCloseQuickCapture}
         onAddTask={addTask}
-      />
-
-      {/* İmmersif Zen Odak Modu Tam Ekran Saati (Ctrl + .) */}
-      <ZenFocusOverlay
-        isOpen={isZenFocusOpen}
-        onClose={handleCloseZenFocus}
-        onAddTask={addTask}
-        todayStr={todayStr}
       />
     </AppLayout>
   );

@@ -66,7 +66,7 @@ $headers = @{
 $releaseBody = @{
     tag_name = "v$Version"
     name = "Dali v$Version"
-    body = "### ✨ Dali v$Version Kapsamlı Revizyon ve Yenilikler`n`n- 🌌 **Akıcı & Saydam Odak Modu (Ctrl + .)**: Bilgisayarı kapatmayan, ekranın en üstünde zarif bir gradient HUD bar olarak çalışan yeni odak modu; Bebas Neue dijital saat (saniyeli), odak sayacı ve kesintisiz akıcı geçiş.`n- ⚡ **Global Ctrl + Space & Windows Görev Çubuğunu Karartma**: Ctrl + Space hızlı yakalama penceresi açıldığında Windows görev çubuğu dahil ekranın tamamı kararır.`n- 📐 **Tüm Sayfalarda Alttan Boşluk (84px Breathing Room)**: Günlük Akış'taki görev ekleme bileşeni ve tüm sayfalardaki alt bileşenler artık ekranın bitişine yapışmaz, ferah bir alt boşlukla sonlanır.`n- 📝 **Notlar Büyütme & Ayarlanabilir Widget Modu**: Not listesindeki her karta ve editöre doğrudan 'Ayrı İncele (Widget)' butonu eklendi; widget boyutu Kompakt (480px), Standart (820px) ve Tam Ekran (95vw) olarak ayarlanabilir.`n- 📊 **İstatistikler Sayfası Revizyonu**: 52 haftalık yatay kaydırmalı ısı haritası ve sağ alttaki işaret kaldırıldı; yerine Haftalık Ritim kartı ve 28 günlük (4 haftalık) tam genişlikli matris entegre edildi.`n- 🎨 **12 Renk Teması & Zengin Karanlık Modlar**: OLED Siyah, Gece Mavisi (Midnight), Zümrüt Ormanı (Forest), Ametist Moru ve Sıcak Espresso karanlık temaları eklendi.`n- 🪟 **Ayarlar Sayfasında Masaüstü Mini Widget Ayarları**: Widget opaklığı için çubuk (slider), her zaman üstte kal, varsayılan boyut ve filtreleme kontrolleri asıl Ayarlar sayfasına taşındı.`n- 🔁 **Tekrarlanan Rutinler Seçeneği**: Rutinlere 'Her Hafta Tekrarla (Kalıcı Şablon)' ve 'Tek Seferlik (Günü Gelince Aktar ve Sil)' seçeneği eklendi.`n- 🌿 **Günlük Akış Sadeleştirmesi**: Günün ritmi bileşeni tamamen kaldırıldı, haftalık ritim istatistiklere taşınarak Günlük Akış tertemiz ve odaklı hale getirildi."
+    body = "### ✨ Dali v$Version - Odaklanma Modu Temizliği & İyileştirmeler`n`n- 🧹 **Zen Odak HUD Modu Tamamen Kaldırıldı**: Kullanıcı geri bildirimi doğrultusunda ekranın üstündeki gereksiz odaklanma barı ve kısayolu tamamen kaldırıldı; sistem sadeleştirildi.`n- ⚡ **Global Quick Capture (Ctrl + Space)**: Görev ve plan oluşturma akışı en saf ve akıcı haliyle çalışmaya devam ediyor.`n- 💎 **Kararlılık & Performans**: Tüm arka uç kancaları ve gereksiz bileşenler temizlendi."
     draft = $false
     prerelease = $false
 }
@@ -82,7 +82,7 @@ $sig = [System.IO.File]::ReadAllText((Resolve-Path $sigPath)).Trim()
 
 $latestJson = @{
     version = $Version
-    notes = "Dali v${Version} - Akici Saydam Odak HUD (Ctrl+.), Windows Bar Karartma (Ctrl+Space), Alttan Ferah Bosluk, Not Widget Boyut Ayarlari, Zengin Karanlik Renk Temalari ve Rutin Secenekleri."
+    notes = "Dali v${Version} - Odaklanma modu tamamen kaldirildi, saf minimalist gunluk planlayici deneyimi saglandi."
     pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     platforms = @{
         "windows-x86_64" = @{

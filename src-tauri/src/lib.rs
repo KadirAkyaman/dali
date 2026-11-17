@@ -1,7 +1,7 @@
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, Position, Size, Window,
+    AppHandle, Emitter, LogicalSize, Manager, Size, Window,
 };
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
@@ -72,29 +72,6 @@ fn set_always_on_top(window: Window, always_on_top: bool) -> Result<(), String> 
 }
 
 #[tauri::command]
-fn enter_zen_fullscreen(window: Window) -> Result<(), String> {
-    if let Ok(Some(monitor)) = window.current_monitor() {
-        let size = monitor.size();
-        let scale = monitor.scale_factor();
-        let logical_width = size.width as f64 / scale;
-        let _ = window.set_fullscreen(false);
-        let _ = window.unmaximize();
-        let _ = window.set_size(Size::Logical(LogicalSize::new(logical_width, 100.0)));
-        let _ = window.set_position(Position::Logical(LogicalPosition::new(0.0, 0.0)));
-        let _ = window.set_always_on_top(true);
-    }
-    Ok(())
-}
-
-#[tauri::command]
-fn exit_zen_fullscreen(window: Window) -> Result<(), String> {
-    let _ = window.set_always_on_top(false);
-    let _ = window.set_size(Size::Logical(LogicalSize::new(1000.0, 720.0)));
-    let _ = window.center();
-    Ok(())
-}
-
-#[tauri::command]
 fn enter_capture_overlay(window: Window) -> Result<bool, String> {
     let was_max = window.is_maximized().map_err(|e| e.to_string())?;
     window.set_fullscreen(true).map_err(|e| e.to_string())?;
@@ -134,8 +111,6 @@ pub fn run() {
                             let shortcut_str = shortcut.to_string().to_lowercase();
                             if shortcut_str.contains("space") {
                                 let _ = window.emit("trigger-quick-capture", ());
-                            } else if shortcut_str.contains("period") || shortcut_str.contains(".") {
-                                let _ = window.emit("trigger-zen-focus", ());
                             }
                         }
                     }
@@ -146,9 +121,6 @@ pub fn run() {
             // Global kısayolları güvenle kaydet
             let _ = app.global_shortcut().register("Ctrl+Space");
             let _ = app.global_shortcut().register("CommandOrControl+Space");
-            let _ = app.global_shortcut().register("Ctrl+.");
-            let _ = app.global_shortcut().register("Ctrl+Period");
-            let _ = app.global_shortcut().register("CommandOrControl+Period");
             // Sistem tepsisi menüsü oluştur
             let show_item = MenuItem::with_id(app, "show", "Dali'yi Aç", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Çıkış", true, None::<&str>)?;
@@ -197,8 +169,6 @@ pub fn run() {
             exit_widget_mode,
             set_widget_size,
             set_always_on_top,
-            enter_zen_fullscreen,
-            exit_zen_fullscreen,
             enter_capture_overlay,
             exit_capture_overlay,
             exit_app
