@@ -11,7 +11,7 @@ import {
   Settings2,
   Minimize2,
   FolderKanban,
-  Building2,
+  CircleDollarSign,
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
@@ -69,10 +69,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onTogg
           <button
             className={`${styles.navItem} ${activeTab === 'clients' ? styles.navItemActive : ''}`}
             onClick={() => onTabChange('clients')}
-            aria-label="Kurum Yönetimi"
+            aria-label="Finans"
           >
-            <Building2 className={styles.navItemIcon} />
-            <span>Kurum Yönetimi</span>
+            <CircleDollarSign className={styles.navItemIcon} />
+            <span>Finans</span>
           </button>
 
           <button

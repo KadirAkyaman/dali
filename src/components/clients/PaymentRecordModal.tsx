@@ -59,6 +59,7 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
 
     onAddPayment(parsedAmount, dateInput, noteInput.trim() || undefined, methodInput);
     setNoteInput('');
+    setAmountInput('');
   };
 
   return (
@@ -109,7 +110,7 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
               onClick={onMarkFullPaid}
             >
               <CheckCircle2 size={13} />
-              <span>Kalan {remaining.toLocaleString('tr-TR')} {currencySymbol} İçin Tek Tıkla Tam Ödendi İşaretle</span>
+              <span>Kalan {remaining.toLocaleString('tr-TR')} {currencySymbol} tutarı bugün tahsil edildi olarak işaretle</span>
             </button>
           ) : (
             <div className={styles.allPaidBanner}>

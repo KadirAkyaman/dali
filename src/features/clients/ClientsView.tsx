@@ -1,20 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, ArrowLeft, ArrowRight, Building2, CalendarDays, Check, CheckCircle2, Clock3, Download, Edit2, Plus, Search, Trash2, TrendingUp, Wallet } from 'lucide-react';
-import { Client, CURRENCY_SYMBOLS, MONTH_NAMES_TR } from '../../types/client';
+import { AlertTriangle, ArrowDownLeft, ArrowLeft, ArrowRight, Building2, CalendarDays, Check, CheckCircle2, Clock3, Download, Edit2, Plus, Receipt, Search, Trash2, TrendingUp, Wallet } from 'lucide-react';
+import { Client, CURRENCY_SYMBOLS, MONTH_NAMES_TR, getFirstBillingPeriod } from '../../types/client';
+import { Expense, EXPENSE_CATEGORY_LABELS } from '../../types/expense';
 import { localClientRepository } from '../../repositories/localClientRepository';
+import { localExpenseRepository } from '../../repositories/localExpenseRepository';
 import { ClientModal } from '../../components/clients/ClientModal';
+import { ExpenseModal } from '../../components/clients/ExpenseModal';
 import { PaymentRecordModal } from '../../components/clients/PaymentRecordModal';
 import styles from './ClientsView.module.css';
 
 type Filter = 'all' | 'active' | 'paused' | 'overdue' | 'archived';
 const money = (value: number, currency: Client['currency']) => `${value.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ${CURRENCY_SYMBOLS[currency] || '₺'}`;
 const mixedMoney = (totals: Partial<Record<Client['currency'], number>>) => {
-  const parts = (Object.entries(totals) as [Client['currency'], number][]).filter(([, value]) => value > 0).map(([currency, value]) => money(value, currency));
+  const parts = (Object.entries(totals) as [Client['currency'], number][]).filter(([, value]) => value !== 0).map(([currency, value]) => money(value, currency));
   return parts.length ? parts.join(' · ') : money(0, 'TRY');
 };
 
 export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [clients, setClients] = useState<Client[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -22,11 +26,17 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [clientModal, setClientModal] = useState(false);
   const [editing, setEditing] = useState<Client | null>(null);
   const [paymentMonth, setPaymentMonth] = useState<string | null>(null);
+  const [expenseModalOpen, setExpenseModalOpen] = useState(false);
+  const [expenseMonth, setExpenseMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const currentKey = todayStr.slice(0, 7);
   const refresh = () => setClients(localClientRepository.getClients());
-  useEffect(() => { refresh(); }, []);
+  const refreshExpenses = () => setExpenses(localExpenseRepository.getExpenses());
+  useEffect(() => { refresh(); refreshExpenses(); }, []);
 
   const alerts = useMemo(() => localClientRepository.getOverdueAlerts(todayStr), [clients, todayStr]);
   const selected = clients.find((client) => client.id === selectedId) || null;
@@ -40,9 +50,22 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const expected: Partial<Record<Client['currency'], number>> = {};
   const overdue: Partial<Record<Client['currency'], number>> = {};
   const yearly: Partial<Record<Client['currency'], number>> = {};
-  activeClients.forEach((client) => {
+  const currentExpenses = expenses.filter((expense) => expense.spent_at.slice(0, 7) === currentKey);
+  const monthlyExpenses: Partial<Record<Client['currency'], number>> = {};
+  const net: Partial<Record<Client['currency'], number>> = {};
+  clients.forEach((client) => {
     collected[client.currency] = (collected[client.currency] || 0) + (client.records[currentKey]?.installments.reduce((n, p) => n + p.amount, 0) || 0);
-    expected[client.currency] = (expected[client.currency] || 0) + (client.records[currentKey]?.target_amount ?? client.monthly_retainer);
+  });
+  activeClients.forEach((client) => {
+    const firstDue = getFirstBillingPeriod(client);
+    if (firstDue.year < today.getFullYear() || (firstDue.year === today.getFullYear() && firstDue.month <= today.getMonth() + 1)) {
+      expected[client.currency] = (expected[client.currency] || 0) + (client.records[currentKey]?.target_amount ?? client.monthly_retainer);
+    }
+  });
+  currentExpenses.forEach((expense) => { monthlyExpenses[expense.currency] = (monthlyExpenses[expense.currency] || 0) + expense.amount; });
+  new Set([...Object.keys(collected), ...Object.keys(monthlyExpenses)]).forEach((currency) => {
+    const code = currency as Client['currency'];
+    net[code] = (collected[code] || 0) - (monthlyExpenses[code] || 0);
   });
   alerts.forEach((alert) => { overdue[alert.currency] = (overdue[alert.currency] || 0) + alert.remaining_amount; });
   clients.forEach((client) => Object.entries(client.records).filter(([key]) => key.startsWith(String(year))).forEach(([, record]) => {
@@ -56,6 +79,17 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   };
   const deleteClient = (client: Client) => {
     if (confirm(`“${client.name}” kurumunu ve tüm ödeme geçmişini silmek istiyor musunuz?`)) { localClientRepository.deleteClient(client.id); if (selectedId === client.id) setSelectedId(null); refresh(); }
+  };
+  const saveExpense = (expense: Omit<Expense, 'id' | 'created_at'>) => {
+    localExpenseRepository.createExpense(expense);
+    refreshExpenses();
+    setExpenseModalOpen(false);
+  };
+  const deleteExpense = (expense: Expense) => {
+    if (confirm(`“${expense.title}” gider kaydını silmek istiyor musun?`)) {
+      localExpenseRepository.deleteExpense(expense.id);
+      refreshExpenses();
+    }
   };
   const exportYear = () => {
     const quote = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
@@ -79,7 +113,10 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     const record = client.records[key];
     const target = record?.target_amount ?? client.monthly_retainer;
     const paid = record?.installments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
-    const late = client.status === 'active' && (y < today.getFullYear() || (y === today.getFullYear() && (m < today.getMonth() + 1 || (m === today.getMonth() + 1 && today.getDate() > client.billing_end_day)))) && paid < target;
+    const firstDue = getFirstBillingPeriod(client);
+    const billingStarted = y > firstDue.year || (y === firstDue.year && m >= firstDue.month);
+    const dueDay = Math.min(client.billing_end_day, new Date(y, m, 0).getDate());
+    const late = client.status === 'active' && billingStarted && (y < today.getFullYear() || (y === today.getFullYear() && (m < today.getMonth() + 1 || (m === today.getMonth() + 1 && today.getDate() > dueDay)))) && paid < target;
     return { key, target, paid, late, done: paid >= target && target > 0 };
   };
 
@@ -88,7 +125,7 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       <div className={styles.heading}>
         {onBack && <button className={styles.backButton} onClick={onBack} aria-label="Geri"><ArrowLeft size={17}/></button>}
         <div className={styles.headingIcon}><Building2 size={21}/></div>
-        <div><div className={styles.eyebrow}>MÜŞTERİ PORTFÖYÜ</div><h1>Kurum yönetimi</h1><p>Kurumları, hizmet kapsamını ve aylık tahsilatları tek yerden takip edin.</p></div>
+        <div><div className={styles.eyebrow}>GELİR & GİDER TAKİBİ</div><h1>Finans yönetimi</h1><p>Kurum gelirlerini, tahsilatları ve işletme giderlerini tek yerden takip et.</p></div>
       </div>
       <button className={styles.primaryButton} onClick={() => { setEditing(null); setClientModal(true); }}><Plus size={17}/> Kurum ekle</button>
     </header>
@@ -101,8 +138,23 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     <section className={styles.metrics}>
       <article className={styles.metric}><div className={styles.metricIcon}><Wallet size={17}/></div><span>Bu ay tahsil edildi</span><strong>{mixedMoney(collected)}</strong><small>Aktif kurumlardan alınan</small></article>
       <article className={styles.metric}><div className={styles.metricIcon}><CalendarDays size={17}/></div><span>Bu ay beklenen</span><strong>{mixedMoney(expected)}</strong><small>{activeClients.length} aktif kurum</small></article>
+      <article className={`${styles.metric} ${styles.metricExpense}`}><div className={styles.metricIcon}><ArrowDownLeft size={17}/></div><span>Bu ay gider</span><strong>{mixedMoney(monthlyExpenses)}</strong><small>{currentExpenses.length} gider kaydı</small></article>
+      <article className={`${styles.metric} ${styles.metricNet}`}><div className={styles.metricIcon}><TrendingUp size={17}/></div><span>Tahsilat − gider</span><strong>{mixedMoney(net)}</strong><small>Bu ay net nakit akışı</small></article>
       <article className={`${styles.metric} ${alerts.length ? styles.metricDanger : ''}`}><div className={styles.metricIcon}><Clock3 size={17}/></div><span>Geciken alacak</span><strong>{mixedMoney(overdue)}</strong><small>{alerts.length ? `${alerts.length} ödeme takibi gerekiyor` : 'Gecikmiş ödeme yok'}</small></article>
       <article className={styles.metric}><div className={styles.metricIcon}><TrendingUp size={17}/></div><span>{year} tahsilatı</span><strong>{mixedMoney(yearly)}</strong><small>Yıl başından bugüne</small></article>
+    </section>
+
+    <section className={styles.expensesPanel}>
+      <div className={styles.expenseHeader}><div><span className={styles.eyebrow}>İŞLETME HARCAMALARI</span><h2>Giderler</h2><p>Yazılım abonelikleri, sistemler, reklam ve operasyon harcamaları</p></div><div className={styles.expenseActions}><input aria-label="Gider dönemi" type="month" value={expenseMonth} onChange={(event) => setExpenseMonth(event.target.value)}/><button className={styles.primaryButton} onClick={() => setExpenseModalOpen(true)}><Plus size={16}/> Gider ekle</button></div></div>
+      {(() => {
+        const periodExpenses = expenses.filter((expense) => expense.spent_at.slice(0, 7) === expenseMonth).sort((a, b) => b.spent_at.localeCompare(a.spent_at));
+        const periodTotals: Partial<Record<Client['currency'], number>> = {};
+        periodExpenses.forEach((expense) => { periodTotals[expense.currency] = (periodTotals[expense.currency] || 0) + expense.amount; });
+        return <>
+          <div className={styles.expenseSummary}><div><span>{new Date(`${expenseMonth}-15T12:00:00`).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })} toplamı</span><strong>{mixedMoney(periodTotals)}</strong></div><span className={styles.expenseCount}>{periodExpenses.length} kayıt</span></div>
+          {periodExpenses.length ? <div className={styles.expenseList}>{periodExpenses.map((expense) => <article key={expense.id} className={styles.expenseRow}><div className={styles.expenseGlyph}><Receipt size={16}/></div><div className={styles.expenseName}><strong>{expense.title}</strong><span>{expense.vendor || EXPENSE_CATEGORY_LABELS[expense.category]}{expense.vendor ? ` · ${EXPENSE_CATEGORY_LABELS[expense.category]}` : ''}</span>{expense.note && <small>{expense.note}</small>}</div><time>{new Date(`${expense.spent_at}T12:00:00`).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}</time><strong className={styles.expenseAmount}>− {money(expense.amount, expense.currency)}</strong><button className={styles.expenseDelete} onClick={() => deleteExpense(expense)} aria-label={`${expense.title} giderini sil`} title="Gideri sil"><Trash2 size={14}/></button></article>)}</div> : <div className={styles.expenseEmpty}><div><Receipt size={18}/></div><span>Bu dönemde gider kaydı yok</span><small>Bir sistem veya işletme harcaması ekleyerek başlayabilirsin.</small></div>}
+        </>;
+      })()}
     </section>
 
     <section className={styles.workspace}>
@@ -130,6 +182,7 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     </section>
 
     {clientModal && <ClientModal client={editing} onClose={() => { setClientModal(false); setEditing(null); }} onSave={saveClient}/>}
+    {expenseModalOpen && <ExpenseModal todayStr={todayStr} onClose={() => setExpenseModalOpen(false)} onSave={saveExpense}/>}
     {selected && paymentMonth && <PaymentRecordModal client={selected} yearMonth={paymentMonth} todayStr={todayStr} onClose={() => setPaymentMonth(null)} onAddPayment={(amount, date, note, method) => { localClientRepository.addPayment(selected.id, paymentMonth, amount, date, note, method); refresh(); }} onMarkFullPaid={() => { localClientRepository.markMonthFullyPaid(selected.id, paymentMonth, todayStr); refresh(); }} onResetPayment={() => { localClientRepository.resetMonthPayment(selected.id, paymentMonth); refresh(); }} onToggleInvoice={(invoice) => { localClientRepository.toggleInvoiceStatus(selected.id, paymentMonth, invoice); refresh(); }} onSaveMonthNotes={(notes) => { localClientRepository.saveMonthNotes(selected.id, paymentMonth, notes); refresh(); }}/ >}
   </div>;
 };

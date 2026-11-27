@@ -42,6 +42,14 @@ export interface Client {
   records: Record<string, MonthlyBillingRecord>; // key: "YYYY-MM"
 }
 
+export const getFirstBillingPeriod = (client: Pick<Client, 'created_at'>) => {
+  const createdAt = new Date(client.created_at);
+  const nextMonth = createdAt.getMonth() + 2;
+  return nextMonth > 12
+    ? { year: createdAt.getFullYear() + 1, month: 1 }
+    : { year: createdAt.getFullYear(), month: nextMonth };
+};
+
 export interface OverdueAlert {
   client_id: string;
   client_name: string;

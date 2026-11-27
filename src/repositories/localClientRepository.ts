@@ -1,4 +1,4 @@
-import { Client, MonthlyBillingRecord, PaymentInstallment, OverdueAlert, MONTH_NAMES_TR } from '../types/client';
+import { Client, MonthlyBillingRecord, PaymentInstallment, OverdueAlert, MONTH_NAMES_TR, getFirstBillingPeriod } from '../types/client';
 
 const STORAGE_KEY = 'dali_clients';
 const LEGACY_DEMO_CLIENT_IDS = new Set(['client-acme', 'client-lumina']);
@@ -232,9 +232,9 @@ export class LocalClientRepository {
     const currentMonthNum = today.getMonth() + 1;
 
     clients.forEach((client) => {
-      const created = new Date(client.created_at);
-      let year = created.getFullYear();
-      let month = created.getMonth() + 1;
+      const firstBillingPeriod = getFirstBillingPeriod(client);
+      let year = firstBillingPeriod.year;
+      let month = firstBillingPeriod.month;
       while (year < currentYear || (year === currentYear && month <= currentMonthNum)) {
         const key = `${year}-${String(month).padStart(2, '0')}`;
         const record = client.records[key];
