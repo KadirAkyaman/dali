@@ -217,11 +217,11 @@ export const ClientModal: React.FC<ClientModalProps> = ({ client, onClose, onSav
 
           {/* Hizmet Açıklaması / Notlar */}
           <div className={styles.formGroup}>
-            <label>Hizmet Kapsamı & Notlar</label>
+              <label>Hizmet kapsamı ve kurum notları</label>
             <div className={styles.inputWrapper}>
               <FileText size={16} className={styles.fieldIconTop} />
               <textarea
-                placeholder="Örn: Aylık 20 saat yazılım & tasarım desteği, sunucu yönetimi..."
+                placeholder="Örn: Google ve Meta reklam yönetimi, aylık SEO çalışmaları, içerik optimizasyonu..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}

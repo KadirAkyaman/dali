@@ -1,585 +1,133 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Building2,
-  Plus,
-  Search,
-  DollarSign,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Edit2,
-  Trash2,
-  TrendingUp,
-  ChevronLeft,
-  ChevronRight,
-  ArrowLeft,
-} from 'lucide-react';
-import { Client, OverdueAlert, CURRENCY_SYMBOLS, MONTH_NAMES_TR } from '../../types/client';
+import React, { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, ArrowLeft, ArrowRight, Building2, CalendarDays, Check, CheckCircle2, Clock3, Download, Edit2, Plus, Search, Trash2, TrendingUp, Wallet } from 'lucide-react';
+import { Client, CURRENCY_SYMBOLS, MONTH_NAMES_TR } from '../../types/client';
 import { localClientRepository } from '../../repositories/localClientRepository';
 import { ClientModal } from '../../components/clients/ClientModal';
 import { PaymentRecordModal } from '../../components/clients/PaymentRecordModal';
-import { OverdueAlertBanner } from '../../components/clients/OverdueAlertBanner';
 import styles from './ClientsView.module.css';
+
+type Filter = 'all' | 'active' | 'overdue' | 'archived';
+const money = (value: number, currency: Client['currency']) => `${value.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ${CURRENCY_SYMBOLS[currency] || '₺'}`;
+const mixedMoney = (totals: Partial<Record<Client['currency'], number>>) => {
+  const parts = (Object.entries(totals) as [Client['currency'], number][]).filter(([, value]) => value > 0).map(([currency, value]) => money(value, currency));
+  return parts.length ? parts.join(' · ') : money(0, 'TRY');
+};
 
 export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [clients, setClients] = useState<Client[]>([]);
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'overdue' | 'archived'>('all');
-
-  // Modals state
-  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
-  const [editingClient, setEditingClient] = useState<Client | null>(null);
-
-  const [paymentModalData, setPaymentModalData] = useState<{
-    client: Client;
-    yearMonth: string;
-  } | null>(null);
-
-  // Today string YYYY-MM-DD
+  const [filter, setFilter] = useState<Filter>('all');
+  const [query, setQuery] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [clientModal, setClientModal] = useState(false);
+  const [editing, setEditing] = useState<Client | null>(null);
+  const [paymentMonth, setPaymentMonth] = useState<string | null>(null);
   const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(
-    today.getDate()
-  ).padStart(2, '0')}`;
-  const currentMonthStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const currentKey = todayStr.slice(0, 7);
+  const refresh = () => setClients(localClientRepository.getClients());
+  useEffect(() => { refresh(); }, []);
 
-  const loadClients = () => {
-    setClients(localClientRepository.getClients());
+  const alerts = useMemo(() => localClientRepository.getOverdueAlerts(todayStr), [clients, todayStr]);
+  const selected = clients.find((client) => client.id === selectedId) || null;
+  const filtered = clients.filter((client) => {
+    const haystack = `${client.name} ${client.contact_person || ''} ${client.notes || ''}`.toLocaleLowerCase('tr-TR');
+    return haystack.includes(query.toLocaleLowerCase('tr-TR')) &&
+      (filter === 'all' || (filter === 'overdue' ? alerts.some((alert) => alert.client_id === client.id) : client.status === filter));
+  });
+  const activeClients = clients.filter((client) => client.status === 'active');
+  const collected: Partial<Record<Client['currency'], number>> = {};
+  const expected: Partial<Record<Client['currency'], number>> = {};
+  const overdue: Partial<Record<Client['currency'], number>> = {};
+  const yearly: Partial<Record<Client['currency'], number>> = {};
+  activeClients.forEach((client) => {
+    collected[client.currency] = (collected[client.currency] || 0) + (client.records[currentKey]?.installments.reduce((n, p) => n + p.amount, 0) || 0);
+    expected[client.currency] = (expected[client.currency] || 0) + (client.records[currentKey]?.target_amount ?? client.monthly_retainer);
+  });
+  alerts.forEach((alert) => { overdue[alert.currency] = (overdue[alert.currency] || 0) + alert.remaining_amount; });
+  clients.forEach((client) => Object.entries(client.records).filter(([key]) => key.startsWith(String(year))).forEach(([, record]) => {
+    yearly[client.currency] = (yearly[client.currency] || 0) + record.installments.reduce((sum, payment) => sum + payment.amount, 0);
+  }));
+
+  const openPayment = (y: number, m: number) => setPaymentMonth(`${y}-${String(m).padStart(2, '0')}`);
+  const saveClient = (data: Omit<Client, 'id' | 'created_at' | 'records'>) => {
+    if (editing) localClientRepository.updateClient(editing.id, data); else localClientRepository.createClient(data);
+    refresh(); setClientModal(false); setEditing(null);
+  };
+  const deleteClient = (client: Client) => {
+    if (confirm(`“${client.name}” kurumunu ve tüm ödeme geçmişini silmek istiyor musunuz?`)) { localClientRepository.deleteClient(client.id); if (selectedId === client.id) setSelectedId(null); refresh(); }
+  };
+  const exportYear = () => {
+    const quote = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
+    const rows = [['Kurum', 'Hizmet kapsamı', 'Ay', 'Ödeme dönemi', 'Hedef', 'Tahsil edilen', 'Kalan', 'Durum', 'Tahsilat tarihleri', 'Ödeme notları', 'Aylık kurum notu']];
+    clients.forEach((client) => MONTH_NAMES_TR.forEach((name, index) => {
+      const monthNumber = index + 1;
+      const record = client.records[`${year}-${String(monthNumber).padStart(2, '0')}`];
+      const target = record?.target_amount ?? client.monthly_retainer;
+      const paid = record?.installments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
+      const status = paid >= target ? 'Tahsil edildi' : paid > 0 ? 'Kısmi ödeme' : 'Bekliyor';
+      rows.push([client.name, client.notes || '', `${name} ${year}`, `${client.billing_start_day}-${client.billing_end_day}`, `${target} ${client.currency}`, `${paid} ${client.currency}`, `${Math.max(0, target - paid)} ${client.currency}`, status, record?.installments.map((payment) => payment.paid_date).join(', ') || '', record?.installments.map((payment) => payment.note || payment.method || '').filter(Boolean).join(' / ') || '', record?.custom_notes || '']);
+    }));
+    const csv = `\uFEFF${rows.map((row) => row.map(quote).join(';')).join('\r\n')}`;
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const anchor = document.createElement('a');
+    anchor.href = url; anchor.download = `dali-kurum-tahsilat-${year}.csv`; anchor.click();
+    URL.revokeObjectURL(url);
+  };
+  const recordFor = (client: Client, y: number, m: number) => {
+    const key = `${y}-${String(m).padStart(2, '0')}`;
+    const record = client.records[key];
+    const target = record?.target_amount ?? client.monthly_retainer;
+    const paid = record?.installments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
+    const late = client.status === 'active' && (y < today.getFullYear() || (y === today.getFullYear() && (m < today.getMonth() + 1 || (m === today.getMonth() + 1 && today.getDate() > client.billing_end_day)))) && paid < target;
+    return { key, target, paid, late, done: paid >= target && target > 0 };
   };
 
-  useEffect(() => {
-    loadClients();
-  }, []);
-
-  // Overdue alerts
-  const overdueAlerts = useMemo(() => {
-    return localClientRepository.getOverdueAlerts(todayStr);
-  }, [clients, todayStr]);
-
-  // Financial summary metrics for selected year & current month
-  const financialSummary = useMemo(() => {
-    let currentMonthCollected = 0;
-    let currentMonthRemaining = 0;
-    let totalOverdue = 0;
-    let yearlyCollected = 0;
-    let totalMonthlyRetainer = 0;
-
-    clients.forEach((client) => {
-      if (client.status === 'active') {
-        totalMonthlyRetainer += client.monthly_retainer;
-      }
-
-      // Current month check
-      const currRec = client.records[currentMonthStr];
-      const target = currRec ? currRec.target_amount : client.monthly_retainer;
-      const paid = currRec
-        ? currRec.installments.reduce((sum, inst) => sum + inst.amount, 0)
-        : 0;
-
-      if (client.status === 'active') {
-        currentMonthCollected += paid;
-        currentMonthRemaining += Math.max(0, target - paid);
-      }
-
-      // Check overdue in general
-      if (client.status === 'active') {
-        const isPastEndDay = today.getDate() > client.billing_end_day;
-        if (isPastEndDay && paid < target) {
-          totalOverdue += (target - paid);
-        }
-      }
-
-      // Yearly collected
-      Object.entries(client.records).forEach(([ym, rec]) => {
-        if (ym.startsWith(String(selectedYear))) {
-          const recPaid = rec.installments.reduce((sum, inst) => sum + inst.amount, 0);
-          yearlyCollected += recPaid;
-        }
-      });
-    });
-
-    return {
-      currentMonthCollected,
-      currentMonthRemaining,
-      totalOverdue,
-      yearlyCollected,
-      totalMonthlyRetainer,
-    };
-  }, [clients, currentMonthStr, selectedYear, today]);
-
-  // Filtered clients list
-  const filteredClients = useMemo(() => {
-    return clients.filter((c) => {
-      const matchesSearch =
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (c.contact_person && c.contact_person.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (c.notes && c.notes.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      if (!matchesSearch) return false;
-
-      if (statusFilter === 'active') return c.status === 'active';
-      if (statusFilter === 'archived') return c.status === 'archived';
-      if (statusFilter === 'overdue') {
-        return overdueAlerts.some((a: OverdueAlert) => a.client_id === c.id);
-      }
-
-      return true;
-    });
-  }, [clients, searchQuery, statusFilter, overdueAlerts]);
-
-  // Handler: Add or Edit Client
-  const handleSaveClient = (clientData: Omit<Client, 'id' | 'created_at' | 'records'>) => {
-    if (editingClient) {
-      localClientRepository.updateClient(editingClient.id, clientData);
-    } else {
-      localClientRepository.createClient(clientData);
-    }
-    loadClients();
-    setIsClientModalOpen(false);
-    setEditingClient(null);
-  };
-
-  const handleDeleteClient = (id: string, name: string) => {
-    if (confirm(`"${name}" kurumunu ve tüm ödeme geçmişini silmek istediğinize emin misiniz?`)) {
-      localClientRepository.deleteClient(id);
-      loadClients();
-    }
-  };
-
-  // Open payment modal
-  const handleOpenPayment = (client: Client, year: number, monthNum: number) => {
-    const ym = `${year}-${String(monthNum).padStart(2, '0')}`;
-    setPaymentModalData({ client, yearMonth: ym });
-  };
-
-  const handleOpenPaymentFromAlert = (clientId: string, monthStr: string) => {
-    const client = clients.find((c) => c.id === clientId);
-    if (client) {
-      setPaymentModalData({ client, yearMonth: monthStr });
-    }
-  };
-
-  // Refresh client in modal if updated
-  const activeClientInModal = useMemo(() => {
-    if (!paymentModalData) return null;
-    return clients.find((c) => c.id === paymentModalData.client.id) || paymentModalData.client;
-  }, [paymentModalData, clients]);
-
-  return (
-    <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerTitleArea}>
-          {onBack && (
-            <button type="button" className={styles.backButton} onClick={onBack} aria-label="Ana sayfaya dön">
-              <ArrowLeft size={18} />
-            </button>
-          )}
-          <div className={styles.iconBadge}>
-            <Building2 size={24} />
-          </div>
-          <div>
-            <span className={styles.pageEyebrow}>Finansal takip</span>
-            <h1 className={styles.pageTitle}>Kurum & Gelir Yönetimi</h1>
-            <p className={styles.pageSubtitle}>
-              Freelance müşteriler, aylık retainer sözleşmeleri ve tahsilat takibi
-            </p>
-          </div>
-        </div>
-
-        <div className={styles.headerActions}>
-          <div className={styles.yearSelector}>
-            <button
-              type="button"
-              className={styles.yearNavBtn}
-              onClick={() => setSelectedYear((y) => y - 1)}
-              title="Önceki Yıl"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <span className={styles.yearDisplay}>{selectedYear}</span>
-            <button
-              type="button"
-              className={styles.yearNavBtn}
-              onClick={() => setSelectedYear((y) => y + 1)}
-              title="Sonraki Yıl"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-
-          <button
-            type="button"
-            className={styles.addClientBtn}
-            onClick={() => {
-              setEditingClient(null);
-              setIsClientModalOpen(true);
-            }}
-          >
-            <Plus size={16} />
-            <span>Yeni Kurum Ekle</span>
-          </button>
-        </div>
+  return <div className={styles.container}>
+    <header className={styles.header}>
+      <div className={styles.heading}>
+        {onBack && <button className={styles.backButton} onClick={onBack} aria-label="Geri"><ArrowLeft size={17}/></button>}
+        <div className={styles.headingIcon}><Building2 size={21}/></div>
+        <div><div className={styles.eyebrow}>MÜŞTERİ PORTFÖYÜ</div><h1>Kurum yönetimi</h1><p>Kurumları, hizmet kapsamını ve aylık tahsilatları tek yerden takip edin.</p></div>
       </div>
+      <button className={styles.primaryButton} onClick={() => { setEditing(null); setClientModal(true); }}><Plus size={17}/> Kurum ekle</button>
+    </header>
 
-      {/* Overdue alert banner if any */}
-      <OverdueAlertBanner
-        alerts={overdueAlerts}
-        onOpenPaymentModal={handleOpenPaymentFromAlert}
-      />
+    {alerts.length > 0 && <section className={styles.alertPanel}>
+      <div className={styles.alertMark}><AlertTriangle size={18}/></div><div className={styles.alertCopy}><strong>{alerts.length} tahsilat gecikmede</strong><span>{alerts.slice(0, 3).map((item) => `${item.client_name} · ${item.month_name}`).join('  /  ')}{alerts.length > 3 ? `  /  +${alerts.length - 3} kurum` : ''}</span></div>
+      <button onClick={() => setFilter('overdue')}>Gecikenleri gör <ArrowRight size={15}/></button>
+    </section>}
 
-      {/* KPI Cards Bar */}
-      <div className={styles.kpiGrid}>
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiIconWrapper} style={{ color: 'var(--success)', background: 'var(--success-soft)' }}>
-            <TrendingUp size={20} />
-          </div>
-          <div className={styles.kpiInfo}>
-            <span className={styles.kpiLabel}>Bu Ay Tahsil Edilen</span>
-            <span className={styles.kpiValue} style={{ color: 'var(--success)' }}>
-              {financialSummary.currentMonthCollected.toLocaleString('tr-TR')} ₺
-            </span>
-          </div>
-        </div>
+    <section className={styles.metrics}>
+      <article className={styles.metric}><div className={styles.metricIcon}><Wallet size={17}/></div><span>Bu ay tahsil edildi</span><strong>{mixedMoney(collected)}</strong><small>Aktif kurumlardan alınan</small></article>
+      <article className={styles.metric}><div className={styles.metricIcon}><CalendarDays size={17}/></div><span>Bu ay beklenen</span><strong>{mixedMoney(expected)}</strong><small>{activeClients.length} aktif kurum</small></article>
+      <article className={`${styles.metric} ${alerts.length ? styles.metricDanger : ''}`}><div className={styles.metricIcon}><Clock3 size={17}/></div><span>Geciken alacak</span><strong>{mixedMoney(overdue)}</strong><small>{alerts.length ? `${alerts.length} ödeme takibi gerekiyor` : 'Gecikmiş ödeme yok'}</small></article>
+      <article className={styles.metric}><div className={styles.metricIcon}><TrendingUp size={17}/></div><span>{year} tahsilatı</span><strong>{mixedMoney(yearly)}</strong><small>Yıl başından bugüne</small></article>
+    </section>
 
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiIconWrapper} style={{ color: 'var(--warning)', background: 'var(--warning-soft)' }}>
-            <Clock size={20} />
-          </div>
-          <div className={styles.kpiInfo}>
-            <span className={styles.kpiLabel}>Kalan Bekleyen Tahsilat</span>
-            <span className={styles.kpiValue} style={{ color: 'var(--warning)' }}>
-              {financialSummary.currentMonthRemaining.toLocaleString('tr-TR')} ₺
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiIconWrapper} style={{ color: 'var(--danger)', background: 'var(--danger-soft)' }}>
-            <AlertTriangle size={20} />
-          </div>
-          <div className={styles.kpiInfo}>
-            <span className={styles.kpiLabel}>Gecikmiş Alacak</span>
-            <span className={styles.kpiValue} style={{ color: financialSummary.totalOverdue > 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
-              {financialSummary.totalOverdue.toLocaleString('tr-TR')} ₺
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiIconWrapper} style={{ color: 'var(--accent)', background: 'var(--accent-soft)' }}>
-            <DollarSign size={20} />
-          </div>
-          <div className={styles.kpiInfo}>
-            <span className={styles.kpiLabel}>{selectedYear} Yıllık Tahsilat</span>
-            <span className={styles.kpiValue} style={{ color: 'var(--accent)' }}>
-              {financialSummary.yearlyCollected.toLocaleString('tr-TR')} ₺
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Search & Filter Bar */}
-      <div className={styles.filterBar}>
-        <div className={styles.searchWrapper}>
-          <Search size={16} className={styles.searchIcon} />
-          <input
-            type="text"
-            placeholder="Kurum adı, yetkili veya hizmet ara..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={styles.searchInput}
-          />
-        </div>
-
-        <div className={styles.statusChips}>
-          <button
-            type="button"
-            className={`${styles.filterChip} ${statusFilter === 'all' ? styles.activeChip : ''}`}
-            onClick={() => setStatusFilter('all')}
-          >
-            Tümü ({clients.length})
+    <section className={styles.workspace}>
+      <div className={styles.toolbar}><div><h2>Kurumlar</h2><p>{filtered.length} kayıt listeleniyor</p></div><div className={styles.toolbarActions}><label className={styles.search}><Search size={16}/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Kurum veya hizmet ara"/></label><button className={styles.exportButton} onClick={exportYear} title={`${year} tahsilat raporunu CSV indir`}><Download size={15}/><span>Raporu indir</span></button></div></div>
+      <nav className={styles.filters} aria-label="Kurum filtreleri">{([['all', 'Tümü'], ['active', 'Aktif'], ['overdue', 'Geciken'], ['archived', 'Arşiv']] as [Filter, string][]).map(([key, label]) => <button key={key} className={filter === key ? styles.selectedFilter : ''} onClick={() => setFilter(key)}>{label}<span>{key === 'all' ? clients.length : key === 'overdue' ? new Set(alerts.map((a) => a.client_id)).size : clients.filter((c) => c.status === key).length}</span></button>)}</nav>
+      {filtered.length === 0 ? <div className={styles.empty}><div><Building2 size={22}/></div><strong>{query ? 'Eşleşen kurum bulunamadı' : 'Henüz kurum eklenmemiş'}</strong><p>Hizmet verdiğiniz kurumları ekleyin; ödeme dönemlerini ve tahsilat notlarını burada takip edin.</p>{!query && <button className={styles.primaryButton} onClick={() => { setEditing(null); setClientModal(true); }}><Plus size={16}/> İlk kurumu ekle</button>}</div> : <div className={styles.cardGrid}>{filtered.map((client) => {
+        const payment = recordFor(client, today.getFullYear(), today.getMonth() + 1);
+        const state = payment.done ? 'paid' : payment.late ? 'late' : payment.paid ? 'partial' : 'waiting';
+        const label = state === 'paid' ? 'Tahsil edildi' : state === 'late' ? 'Ödeme gecikti' : state === 'partial' ? 'Kısmi ödeme' : `Her ay ${client.billing_start_day}–${client.billing_end_day} arası`;
+        return <article key={client.id} className={`${styles.clientCard} ${selectedId === client.id ? styles.openCard : ''}`}>
+          <button className={styles.cardMain} onClick={() => setSelectedId(selectedId === client.id ? null : client.id)}>
+            <div className={styles.cardTop}><div className={styles.avatar}>{client.name.trim().charAt(0).toLocaleUpperCase('tr-TR')}</div><div className={styles.clientIdentity}><strong>{client.name}</strong><span>{client.contact_person || (client.status === 'active' ? 'Aktif kurum' : client.status === 'paused' ? 'Durduruldu' : 'Arşivlendi')}</span></div><span className={`${styles.status} ${styles[state]}`}>{state === 'paid' ? <CheckCircle2 size={13}/> : state === 'late' ? <AlertTriangle size={13}/> : state === 'partial' ? <Clock3 size={13}/> : <CalendarDays size={13}/>} {state === 'waiting' ? client.status === 'active' ? label : client.status === 'paused' ? 'Durduruldu' : 'Arşiv' : label}</span></div>
+            <p className={styles.services}>{client.notes || 'Hizmet kapsamı henüz eklenmedi.'}</p>
+            <div className={styles.cardBottom}><div><small>Aylık hizmet bedeli</small><strong>{money(client.monthly_retainer, client.currency)}<em> / ay</em></strong></div><div className={styles.paymentRange}><small><CalendarDays size={13}/> Tahsilat dönemi</small><strong>Her ayın {client.billing_start_day}–{client.billing_end_day}. günü</strong></div><div className={styles.cardLink}>{selectedId === client.id ? 'Detayı kapat' : 'Detayları gör'} <ArrowRight size={15}/></div></div>
           </button>
-          <button
-            type="button"
-            className={`${styles.filterChip} ${statusFilter === 'active' ? styles.activeChip : ''}`}
-            onClick={() => setStatusFilter('active')}
-          >
-            Aktif Kurumlar ({clients.filter((c) => c.status === 'active').length})
-          </button>
-          <button
-            type="button"
-            className={`${styles.filterChip} ${statusFilter === 'overdue' ? styles.activeChip : ''}`}
-            onClick={() => setStatusFilter('overdue')}
-          >
-            Gecikenler ({overdueAlerts.length})
-          </button>
-          <button
-            type="button"
-            className={`${styles.filterChip} ${statusFilter === 'archived' ? styles.activeChip : ''}`}
-            onClick={() => setStatusFilter('archived')}
-          >
-            Arşiv
-          </button>
-        </div>
-      </div>
+          {selectedId === client.id && <div className={styles.detail}>
+            <div className={styles.detailHeader}><div><span className={styles.eyebrow}>AYLIK TAHSİLAT TAKİBİ</span><h3>{client.name} <span>· {year}</span></h3></div><div className={styles.detailActions}><button onClick={() => { setEditing(client); setClientModal(true); }}><Edit2 size={14}/> Düzenle</button><button className={styles.deleteButton} onClick={() => deleteClient(client)}><Trash2 size={14}/></button></div></div>
+            <div className={styles.months}>{MONTH_NAMES_TR.map((name, index) => { const m = index + 1; const monthPayment = recordFor(client, year, m); const monthState = monthPayment.done ? 'paid' : monthPayment.late ? 'late' : monthPayment.paid ? 'partial' : 'waiting'; return <button key={m} onClick={() => openPayment(year, m)} className={`${styles.month} ${styles[`month_${monthState}`]} ${year === today.getFullYear() && m === today.getMonth() + 1 ? styles.thisMonth : ''}`}><span>{name.slice(0, 3)}</span><strong>{monthPayment.done ? <Check size={15}/> : monthPayment.late ? <AlertTriangle size={14}/> : monthPayment.paid ? money(monthPayment.paid, client.currency) : '—'}</strong><small>{monthPayment.done ? 'Ödendi' : monthPayment.late ? 'Gecikti' : monthPayment.paid ? 'Kısmi' : 'Bekliyor'}</small></button>; })}</div>
+            <div className={styles.detailFooter}><span><span className={styles.legendPaid}/> Tahsil edildi</span><span><span className={styles.legendPartial}/> Kısmi ödeme</span><span><span className={styles.legendLate}/> Gecikmiş</span><div className={styles.yearControl}><button onClick={() => setYear((value) => value - 1)} aria-label="Önceki yıl"><ArrowLeft size={14}/></button><strong>{year}</strong><button onClick={() => setYear((value) => value + 1)} aria-label="Sonraki yıl"><ArrowRight size={14}/></button></div></div>
+          </div>}
+        </article>;
+      })}</div>}
+    </section>
 
-      {/* 12-Month Matrix Table */}
-      <div className={styles.tableCard}>
-        <div className={styles.tableScrollWrapper}>
-          <table className={styles.matrixTable}>
-            <thead>
-              <tr>
-                <th className={styles.stickyColHeader}>Kurum & Anlaşma</th>
-                <th className={styles.rangeColHeader}>Ödeme Aralığı</th>
-                {MONTH_NAMES_TR.map((mName) => (
-                  <th key={mName} className={styles.monthHeader}>
-                    {mName.substring(0, 3)}
-                  </th>
-                ))}
-                <th className={styles.totalColHeader}>Yıllık Tahsilat</th>
-                <th className={styles.actionsColHeader}>İşlem</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredClients.map((client) => {
-                const currencySym = CURRENCY_SYMBOLS[client.currency] || '₺';
-
-                // Calculate yearly total for this client
-                let clientYearTotal = 0;
-                for (let m = 1; m <= 12; m++) {
-                  const ym = `${selectedYear}-${String(m).padStart(2, '0')}`;
-                  const rec = client.records[ym];
-                  if (rec) {
-                    clientYearTotal += rec.installments.reduce((sum, inst) => sum + inst.amount, 0);
-                  }
-                }
-
-                return (
-                  <tr key={client.id} className={styles.clientRow}>
-                    {/* Kurum Adı ve Detayı */}
-                    <td className={styles.stickyCol}>
-                      <div className={styles.clientCell}>
-                        <div className={styles.clientCellMain}>
-                          <span className={styles.clientCellName}>{client.name}</span>
-                          <span className={styles.clientCellRetainer}>
-                            {client.monthly_retainer.toLocaleString('tr-TR')} {currencySym}/ay
-                          </span>
-                        </div>
-                        {client.contact_person && (
-                          <span className={styles.clientContact}>
-                            Yetkili: {client.contact_person}
-                          </span>
-                        )}
-                        {client.notes && (
-                          <span className={styles.clientNotes} title={client.notes}>
-                            {client.notes}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Ödeme Aralığı */}
-                    <td className={styles.rangeCell}>
-                      <span className={styles.rangeBadge}>
-                        Her ay {client.billing_start_day}-{client.billing_end_day} arası
-                      </span>
-                    </td>
-
-                    {/* 12 Months Cells */}
-                    {MONTH_NAMES_TR.map((_, mIdx) => {
-                      const monthNum = mIdx + 1;
-                      const ym = `${selectedYear}-${String(monthNum).padStart(2, '0')}`;
-                      const record = client.records[ym];
-
-                      const target = record ? record.target_amount : client.monthly_retainer;
-                      const paid = record
-                        ? record.installments.reduce((sum, inst) => sum + inst.amount, 0)
-                        : 0;
-                      const isFullyPaid = paid >= target && target > 0;
-                      const isPartial = paid > 0 && paid < target;
-
-                      // Check overdue
-                      const isCurrentOrPastMonth =
-                        selectedYear < today.getFullYear() ||
-                        (selectedYear === today.getFullYear() && monthNum <= today.getMonth() + 1);
-
-                      let isOverdue = false;
-                      if (!isFullyPaid && isCurrentOrPastMonth && client.status === 'active') {
-                        if (selectedYear < today.getFullYear() || monthNum < today.getMonth() + 1) {
-                          isOverdue = true;
-                        } else if (monthNum === today.getMonth() + 1 && today.getDate() > client.billing_end_day) {
-                          isOverdue = true;
-                        }
-                      }
-
-                      return (
-                        <td
-                          key={ym}
-                          className={styles.monthCell}
-                          onClick={() => handleOpenPayment(client, selectedYear, monthNum)}
-                        >
-                          <div
-                            className={`${styles.statusPill} ${
-                              isFullyPaid
-                                ? styles.statusPaid
-                                : isOverdue
-                                ? styles.statusOverdue
-                                : isPartial
-                                ? styles.statusPartial
-                                : styles.statusPending
-                            }`}
-                          >
-                            {isFullyPaid && (
-                              <>
-                                <CheckCircle2 size={13} className={styles.statusIcon} />
-                                <span>{paid.toLocaleString('tr-TR')}</span>
-                              </>
-                            )}
-                            {isPartial && (
-                              <>
-                                <Clock size={13} className={styles.statusIcon} />
-                                <span>
-                                  {paid.toLocaleString('tr-TR')}/{target.toLocaleString('tr-TR')}
-                                </span>
-                              </>
-                            )}
-                            {isOverdue && !isPartial && (
-                              <>
-                                <AlertTriangle size={13} className={styles.statusIcon} />
-                                <span>Gecikti</span>
-                              </>
-                            )}
-                            {!isFullyPaid && !isPartial && !isOverdue && (
-                              <span className={styles.pendingDot}>—</span>
-                            )}
-                          </div>
-                        </td>
-                      );
-                    })}
-
-                    {/* Yıllık Toplam */}
-                    <td className={styles.totalCell}>
-                      <span className={styles.yearlyTotalText}>
-                        {clientYearTotal.toLocaleString('tr-TR')} {currencySym}
-                      </span>
-                    </td>
-
-                    {/* İşlemler */}
-                    <td className={styles.actionsCell}>
-                      <div className={styles.rowActions}>
-                        <button
-                          type="button"
-                          className={styles.rowActionBtn}
-                          onClick={() => {
-                            setEditingClient(client);
-                            setIsClientModalOpen(true);
-                          }}
-                          title="Kurumu Düzenle"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          className={`${styles.rowActionBtn} ${styles.deleteActionBtn}`}
-                          onClick={() => handleDeleteClient(client.id, client.name)}
-                          title="Kurumu Sil"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-
-              {filteredClients.length === 0 && (
-                <tr>
-                  <td colSpan={16} className={styles.emptyTable}>
-                    <div className={styles.emptyState}>
-                      <Building2 size={36} className={styles.emptyIcon} />
-                      <p className={styles.emptyTitle}>Henüz kayıtlı kurum bulunmuyor</p>
-                      <p className={styles.emptyDesc}>
-                        Freelance müşterilerinizi ekleyerek aylık düzenli ödeme ve tahsilat takibine başlayın.
-                      </p>
-                      <button
-                        type="button"
-                        className={styles.addClientBtn}
-                        onClick={() => {
-                          setEditingClient(null);
-                          setIsClientModalOpen(true);
-                        }}
-                      >
-                        <Plus size={16} />
-                        <span>İlk Kurumu Ekle</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Bottom spacer for clean viewport breathing room */}
-      <div className={styles.bottomSpacer} />
-
-      {/* Client Modal */}
-      {isClientModalOpen && (
-        <ClientModal
-          client={editingClient}
-          onClose={() => {
-            setIsClientModalOpen(false);
-            setEditingClient(null);
-          }}
-          onSave={handleSaveClient}
-        />
-      )}
-
-      {/* Payment Record Modal */}
-      {paymentModalData && activeClientInModal && (
-        <PaymentRecordModal
-          client={activeClientInModal}
-          yearMonth={paymentModalData.yearMonth}
-          todayStr={todayStr}
-          onClose={() => setPaymentModalData(null)}
-          onAddPayment={(amount, paidDate, note, method) => {
-            localClientRepository.addPayment(
-              activeClientInModal.id,
-              paymentModalData.yearMonth,
-              amount,
-              paidDate,
-              note,
-              method
-            );
-            loadClients();
-          }}
-          onMarkFullPaid={() => {
-            localClientRepository.markMonthFullyPaid(
-              activeClientInModal.id,
-              paymentModalData.yearMonth,
-              todayStr
-            );
-            loadClients();
-          }}
-          onResetPayment={() => {
-            localClientRepository.resetMonthPayment(
-              activeClientInModal.id,
-              paymentModalData.yearMonth
-            );
-            loadClients();
-          }}
-          onToggleInvoice={(invoiceNo) => {
-            localClientRepository.toggleInvoiceStatus(
-              activeClientInModal.id,
-              paymentModalData.yearMonth,
-              invoiceNo
-            );
-            loadClients();
-          }}
-        />
-      )}
-    </div>
-  );
+    {clientModal && <ClientModal client={editing} onClose={() => { setClientModal(false); setEditing(null); }} onSave={saveClient}/>}
+    {selected && paymentMonth && <PaymentRecordModal client={selected} yearMonth={paymentMonth} todayStr={todayStr} onClose={() => setPaymentMonth(null)} onAddPayment={(amount, date, note, method) => { localClientRepository.addPayment(selected.id, paymentMonth, amount, date, note, method); refresh(); }} onMarkFullPaid={() => { localClientRepository.markMonthFullyPaid(selected.id, paymentMonth, todayStr); refresh(); }} onResetPayment={() => { localClientRepository.resetMonthPayment(selected.id, paymentMonth); refresh(); }} onToggleInvoice={(invoice) => { localClientRepository.toggleInvoiceStatus(selected.id, paymentMonth, invoice); refresh(); }} onSaveMonthNotes={(notes) => { localClientRepository.saveMonthNotes(selected.id, paymentMonth, notes); refresh(); }}/ >}
+  </div>;
 };

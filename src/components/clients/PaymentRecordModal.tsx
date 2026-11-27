@@ -12,6 +12,7 @@ interface PaymentRecordModalProps {
   onMarkFullPaid: () => void;
   onResetPayment: () => void;
   onToggleInvoice: (invoiceNumber?: string) => void;
+  onSaveMonthNotes: (notes: string) => void;
 }
 
 export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
@@ -23,6 +24,7 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
   onMarkFullPaid,
   onResetPayment,
   onToggleInvoice,
+  onSaveMonthNotes,
 }) => {
   const [yearStr, monthStr] = yearMonth.split('-');
   const monthNum = parseInt(monthStr, 10);
@@ -48,6 +50,7 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
 
   // Invoice form
   const [invoiceNo, setInvoiceNo] = useState<string>(record.invoice_number || '');
+  const [monthNotes, setMonthNotes] = useState<string>(record.custom_notes || '');
 
   const handleCreateInstallment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,6 +213,12 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
               </div>
             )}
           </div>
+        </div>
+
+        <div className={styles.monthNotesSection}>
+          <label htmlFor="month-notes">{monthName} ayı kurum / iş notu</label>
+          <textarea id="month-notes" value={monthNotes} onChange={(event) => setMonthNotes(event.target.value)} placeholder="Örn: SEO teknik denetimi tamamlandı, reklam kampanyası yenilendi…" />
+          <button type="button" onClick={() => onSaveMonthNotes(monthNotes)}>Aylık notu kaydet</button>
         </div>
 
         {/* Fatura Durumu & Sıfırlama */}

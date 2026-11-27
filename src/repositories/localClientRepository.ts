@@ -247,6 +247,24 @@ export class LocalClientRepository {
     return client;
   }
 
+  saveMonthNotes(clientId: string, yearMonth: string, notes: string): Client {
+    const clients = this.getClients();
+    const client = clients.find((item) => item.id === clientId);
+    if (!client) throw new Error('Client not found');
+    const [year, month] = yearMonth.split('-').map(Number);
+    const record = client.records[yearMonth] || {
+      month,
+      year,
+      target_amount: client.monthly_retainer,
+      installments: [],
+      status: 'pending' as const,
+    };
+    record.custom_notes = notes.trim() || null;
+    client.records[yearMonth] = record;
+    this.saveClients(clients);
+    return client;
+  }
+
   // Fatura kesildi durumunu güncelleme
   toggleInvoiceStatus(clientId: string, yearMonth: string, invoiceNumber?: string): Client {
     const clients = this.getClients();
@@ -278,62 +296,40 @@ export class LocalClientRepository {
     const clients = this.getClients().filter((c) => c.status === 'active');
     const alerts: OverdueAlert[] = [];
 
-    const today = new Date(todayStr);
+    const today = new Date(`${todayStr}T12:00:00`);
     const currentYear = today.getFullYear();
-    const currentMonthNum = today.getMonth() + 1; // 1-12
-    const currentDay = today.getDate(); // 1-31
+    const currentMonthNum = today.getMonth() + 1;
 
     clients.forEach((client) => {
-      // Mevcut ayın kontrolü
-      const currentMonthKey = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}`;
-      const record = client.records[currentMonthKey];
-      const target = record ? record.target_amount : client.monthly_retainer;
-      const paid = record ? record.installments.reduce((sum, i) => sum + i.amount, 0) : 0;
-      const remaining = target - paid;
-
-      // Eğer son ödeme günü geçmişse ve kalan tutar > 0 ise uyarı ver
-      if (currentDay > client.billing_end_day && remaining > 0) {
-        alerts.push({
-          client_id: client.id,
-          client_name: client.name,
-          month_str: currentMonthKey,
-          month_name: `${MONTH_NAMES_TR[currentMonthNum - 1]} ${currentYear}`,
-          target_amount: target,
-          paid_amount: paid,
-          remaining_amount: remaining,
-          currency: client.currency,
-          billing_start_day: client.billing_start_day,
-          billing_end_day: client.billing_end_day,
-          days_overdue: currentDay - client.billing_end_day,
-        });
-      }
-
-      // Geçmiş aylarda ödenmemiş kalan varsa kontrol et (örn: önceki ay)
-      const prevMonthDate = new Date(today);
-      prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
-      const prevYear = prevMonthDate.getFullYear();
-      const prevMonthNum = prevMonthDate.getMonth() + 1;
-      const prevMonthKey = `${prevYear}-${String(prevMonthNum).padStart(2, '0')}`;
-
-      const prevRecord = client.records[prevMonthKey];
-      if (prevRecord) {
-        const prevPaid = prevRecord.installments.reduce((sum, i) => sum + i.amount, 0);
-        const prevRemaining = prevRecord.target_amount - prevPaid;
-        if (prevRemaining > 0) {
+      const created = new Date(client.created_at);
+      let year = created.getFullYear();
+      let month = created.getMonth() + 1;
+      while (year < currentYear || (year === currentYear && month <= currentMonthNum)) {
+        const key = `${year}-${String(month).padStart(2, '0')}`;
+        const record = client.records[key];
+        const target = record?.target_amount ?? client.monthly_retainer;
+        const paid = record?.installments.reduce((sum, item) => sum + item.amount, 0) ?? 0;
+        const monthEnd = new Date(year, month, 0).getDate();
+        const dueDay = Math.min(client.billing_end_day, monthEnd);
+        const dueDate = new Date(year, month - 1, dueDay, 12);
+        const remaining = Math.max(0, target - paid);
+        if (dueDate < today && remaining > 0) {
           alerts.push({
             client_id: client.id,
             client_name: client.name,
-            month_str: prevMonthKey,
-            month_name: `${MONTH_NAMES_TR[prevMonthNum - 1]} ${prevYear}`,
-            target_amount: prevRecord.target_amount,
-            paid_amount: prevPaid,
-            remaining_amount: prevRemaining,
+            month_str: key,
+            month_name: `${MONTH_NAMES_TR[month - 1]} ${year}`,
+            target_amount: target,
+            paid_amount: paid,
+            remaining_amount: remaining,
             currency: client.currency,
             billing_start_day: client.billing_start_day,
             billing_end_day: client.billing_end_day,
-            days_overdue: currentDay + 30,
+            days_overdue: Math.floor((today.getTime() - dueDate.getTime()) / 86400000),
           });
         }
+        month++;
+        if (month > 12) { month = 1; year++; }
       }
     });
 
