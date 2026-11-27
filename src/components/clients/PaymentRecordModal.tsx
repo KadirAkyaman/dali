@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Plus, Trash2, CheckCircle2 } from 'lucide-react';
 import { Client, MonthlyBillingRecord, CURRENCY_SYMBOLS, MONTH_NAMES_TR } from '../../types/client';
 import styles from './PaymentRecordModal.module.css';
@@ -13,6 +13,7 @@ interface PaymentRecordModalProps {
   onResetPayment: () => void;
   onToggleInvoice: (invoiceNumber?: string) => void;
   onSaveMonthNotes: (notes: string) => void;
+  onSetMonthCollectionIncomplete: (incomplete: boolean, remainingAmount: number) => void;
 }
 
 export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
@@ -25,6 +26,7 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
   onResetPayment,
   onToggleInvoice,
   onSaveMonthNotes,
+  onSetMonthCollectionIncomplete,
 }) => {
   const [yearStr, monthStr] = yearMonth.split('-');
   const monthNum = parseInt(monthStr, 10);
@@ -33,17 +35,19 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
   const record: MonthlyBillingRecord = client.records[yearMonth] || {
     month: monthNum,
     year: parseInt(yearStr, 10),
-    target_amount: client.monthly_retainer,
+    target_amount: client.is_variable_fee ? 0 : client.monthly_retainer,
     installments: [],
     status: 'pending',
   };
 
   const totalPaid = record.installments.reduce((sum, i) => sum + i.amount, 0);
-  const remaining = Math.max(0, record.target_amount - totalPaid);
+  const remaining = client.is_variable_fee
+    ? (record.is_collection_incomplete ? Math.max(0, record.remaining_amount ?? record.target_amount - totalPaid) : totalPaid > 0 ? 0 : null)
+    : Math.max(0, record.target_amount - totalPaid);
   const currencySymbol = CURRENCY_SYMBOLS[client.currency] || '₺';
 
   // New partial payment form
-  const [amountInput, setAmountInput] = useState<string>(remaining > 0 ? String(remaining) : '');
+  const [amountInput, setAmountInput] = useState<string>(remaining !== null && remaining > 0 ? String(remaining) : '');
   const [dateInput, setDateInput] = useState<string>(todayStr);
   const [noteInput, setNoteInput] = useState<string>('');
   const [methodInput, setMethodInput] = useState<string>('Havale/EFT');
@@ -51,6 +55,14 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
   // Invoice form
   const [invoiceNo, setInvoiceNo] = useState<string>(record.invoice_number || '');
   const [monthNotes, setMonthNotes] = useState<string>(record.custom_notes || '');
+  const [collectionIncomplete, setCollectionIncomplete] = useState(Boolean(record.is_collection_incomplete));
+  const [remainingInput, setRemainingInput] = useState(record.remaining_amount ? String(record.remaining_amount) : '');
+  const [collectionError, setCollectionError] = useState('');
+
+  useEffect(() => {
+    setCollectionIncomplete(Boolean(record.is_collection_incomplete));
+    setRemainingInput(record.remaining_amount ? String(record.remaining_amount) : '');
+  }, [client.id, yearMonth, record.is_collection_incomplete, record.remaining_amount]);
 
   const handleCreateInstallment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +72,16 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
     onAddPayment(parsedAmount, dateInput, noteInput.trim() || undefined, methodInput);
     setNoteInput('');
     setAmountInput('');
+  };
+
+  const saveCollectionState = () => {
+    const outstanding = Number(remainingInput);
+    if (collectionIncomplete && (!Number.isFinite(outstanding) || outstanding <= 0)) {
+      setCollectionError('Kalan alacak tutarını gir.');
+      return;
+    }
+    setCollectionError('');
+    onSetMonthCollectionIncomplete(collectionIncomplete, collectionIncomplete ? outstanding : 0);
   };
 
   return (
@@ -82,7 +104,7 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
           <div className={styles.summaryCol}>
             <span className={styles.summaryLabel}>Hedef Ücret</span>
             <span className={styles.summaryValue}>
-              {record.target_amount.toLocaleString('tr-TR')} {currencySymbol}
+              {client.is_variable_fee && record.target_amount <= 0 ? 'Değişken' : `${record.target_amount.toLocaleString('tr-TR')} ${currencySymbol}`}
             </span>
           </div>
 
@@ -95,15 +117,15 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
 
           <div className={styles.summaryCol}>
             <span className={styles.summaryLabel}>Kalan Bakiye</span>
-            <span className={remaining > 0 ? styles.summaryValueDanger : styles.summaryValueSuccess}>
-              {remaining.toLocaleString('tr-TR')} {currencySymbol}
+            <span className={remaining !== null && remaining > 0 ? styles.summaryValueDanger : styles.summaryValueSuccess}>
+              {remaining === null ? 'Belirtilmedi' : `${remaining.toLocaleString('tr-TR')} ${currencySymbol}`}
             </span>
           </div>
         </div>
 
         {/* Hızlı Aksiyonlar */}
         <div className={styles.quickActionsRow}>
-          {remaining > 0 ? (
+          {remaining !== null && remaining > 0 ? (
             <button
               type="button"
               className={styles.fullPayBtn}
@@ -112,6 +134,11 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
               <CheckCircle2 size={13} />
               <span>Kalan {remaining.toLocaleString('tr-TR')} {currencySymbol} tutarı bugün tahsil edildi olarak işaretle</span>
             </button>
+          ) : client.is_variable_fee ? (
+            <div className={styles.allPaidBanner}>
+              <CheckCircle2 size={14} color="var(--success)" />
+              <span>{totalPaid > 0 ? 'Eksik tahsilat işaretlenmedi; ödeme tamamlandı kabul ediliyor.' : 'Ödeme gelmediyse, ödeme gününden sonra uyarı oluşur.'}</span>
+            </div>
           ) : (
             <div className={styles.allPaidBanner}>
               <CheckCircle2 size={14} color="var(--success)" />
@@ -119,6 +146,13 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
             </div>
           )}
         </div>
+
+        {client.is_variable_fee && <section className={styles.variableCollectionSection}>
+          <label className={styles.variableCollectionToggle}><input type="checkbox" checked={collectionIncomplete} onChange={(event) => { setCollectionIncomplete(event.target.checked); setCollectionError(''); }}/><span><strong>Bu ayki ücretin tamamı alınmadı</strong><small>Kısmi ödeme yaptıysa, geriye kalan alacağı gir.</small></span></label>
+          {collectionIncomplete && <div className={styles.outstandingEditor}><label>Kalan alacak ({currencySymbol})<input type="number" min="0.01" step="any" value={remainingInput} onChange={(event) => setRemainingInput(event.target.value)} placeholder="Örn. 3.500"/></label><button type="button" onClick={saveCollectionState}>Kalan alacağı kaydet</button></div>}
+          {!collectionIncomplete && totalPaid > 0 && <button type="button" className={styles.settledButton} onClick={saveCollectionState}>Ücretin tamamı alındı olarak işaretle</button>}
+          {collectionError && <small className={styles.collectionError}>{collectionError}</small>}
+        </section>}
 
         {/* Parçalı Ödeme Ekleme Formu */}
         <form onSubmit={handleCreateInstallment} className={styles.installmentForm}>

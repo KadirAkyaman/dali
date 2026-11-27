@@ -92,7 +92,7 @@ export class LocalClientRepository {
     const existingRecord: MonthlyBillingRecord = client.records[yearMonth] || {
       month,
       year,
-      target_amount: client.monthly_retainer,
+      target_amount: client.is_variable_fee ? 0 : client.monthly_retainer,
       installments: [],
       status: 'pending',
     };
@@ -109,16 +109,23 @@ export class LocalClientRepository {
     const totalPaid = updatedInstallments.reduce((sum, i) => sum + i.amount, 0);
 
     let nextStatus: MonthlyBillingRecord['status'] = 'pending';
-    if (totalPaid >= existingRecord.target_amount) {
+    if (existingRecord.target_amount > 0 && totalPaid >= existingRecord.target_amount) {
       nextStatus = 'paid';
     } else if (totalPaid > 0) {
       nextStatus = 'partial';
     }
 
+    const remainingAmount = existingRecord.is_collection_incomplete
+      ? Math.max(0, existingRecord.target_amount - totalPaid)
+      : existingRecord.remaining_amount;
     client.records[yearMonth] = {
       ...existingRecord,
       installments: updatedInstallments,
       status: nextStatus,
+      ...(existingRecord.is_collection_incomplete ? {
+        remaining_amount: remainingAmount,
+        is_collection_incomplete: Boolean(remainingAmount),
+      } : {}),
     };
 
     this.saveClients(clients);
@@ -138,13 +145,16 @@ export class LocalClientRepository {
     const existing = client.records[yearMonth] || {
       month,
       year,
-      target_amount: client.monthly_retainer,
+      target_amount: client.is_variable_fee ? 0 : client.monthly_retainer,
       installments: [],
       status: 'pending',
     };
 
     const currentPaid = existing.installments.reduce((sum, i) => sum + i.amount, 0);
-    const remainder = Math.max(0, existing.target_amount - currentPaid);
+    if (client.is_variable_fee && !existing.is_collection_incomplete) return client;
+    const remainder = existing.is_collection_incomplete && existing.remaining_amount != null
+      ? existing.remaining_amount
+      : Math.max(0, existing.target_amount - currentPaid);
 
     if (remainder > 0) {
       existing.installments.push({
@@ -157,6 +167,8 @@ export class LocalClientRepository {
     }
 
     existing.status = 'paid';
+    existing.is_collection_incomplete = false;
+    existing.remaining_amount = 0;
     client.records[yearMonth] = existing;
 
     this.saveClients(clients);
@@ -172,6 +184,9 @@ export class LocalClientRepository {
     if (client.records[yearMonth]) {
       client.records[yearMonth].installments = [];
       client.records[yearMonth].status = 'pending';
+      client.records[yearMonth].is_collection_incomplete = false;
+      client.records[yearMonth].remaining_amount = 0;
+      if (client.is_variable_fee) client.records[yearMonth].target_amount = 0;
     }
 
     this.saveClients(clients);
@@ -186,11 +201,42 @@ export class LocalClientRepository {
     const record = client.records[yearMonth] || {
       month,
       year,
-      target_amount: client.monthly_retainer,
+      target_amount: client.is_variable_fee ? 0 : client.monthly_retainer,
       installments: [],
       status: 'pending' as const,
     };
     record.custom_notes = notes.trim() || null;
+    client.records[yearMonth] = record;
+    this.saveClients(clients);
+    return client;
+  }
+
+  setMonthCollectionIncomplete(clientId: string, yearMonth: string, incomplete: boolean, remainingAmount = 0): Client {
+    const clients = this.getClients();
+    const client = clients.find((item) => item.id === clientId);
+    if (!client) throw new Error('Client not found');
+    if (!client.is_variable_fee) throw new Error('Variable collection is only available for variable-fee clients');
+    const [year, month] = yearMonth.split('-').map(Number);
+    const record = client.records[yearMonth] || {
+      month,
+      year,
+      target_amount: 0,
+      installments: [],
+      status: 'pending' as const,
+    };
+    const paid = record.installments.reduce((sum, payment) => sum + payment.amount, 0);
+    if (incomplete) {
+      if (!Number.isFinite(remainingAmount) || remainingAmount <= 0) throw new Error('Remaining amount must be greater than zero');
+      record.is_collection_incomplete = true;
+      record.remaining_amount = remainingAmount;
+      record.target_amount = paid + remainingAmount;
+      record.status = paid > 0 ? 'partial' : 'pending';
+    } else {
+      record.is_collection_incomplete = false;
+      record.remaining_amount = 0;
+      record.target_amount = paid;
+      record.status = paid > 0 ? 'paid' : 'pending';
+    }
     client.records[yearMonth] = record;
     this.saveClients(clients);
     return client;
@@ -206,7 +252,7 @@ export class LocalClientRepository {
     const existing = client.records[yearMonth] || {
       month: parseInt(monthStr, 10),
       year: parseInt(yearStr, 10),
-      target_amount: client.monthly_retainer,
+      target_amount: client.is_variable_fee ? 0 : client.monthly_retainer,
       installments: [],
       status: 'pending',
     };
@@ -238,13 +284,18 @@ export class LocalClientRepository {
       while (year < currentYear || (year === currentYear && month <= currentMonthNum)) {
         const key = `${year}-${String(month).padStart(2, '0')}`;
         const record = client.records[key];
-        const target = record?.target_amount ?? client.monthly_retainer;
         const paid = record?.installments.reduce((sum, item) => sum + item.amount, 0) ?? 0;
+        const target = client.is_variable_fee
+          ? (record?.target_amount ?? 0)
+          : (record?.target_amount ?? client.monthly_retainer);
         const monthEnd = new Date(year, month, 0).getDate();
         const dueDay = Math.min(client.billing_end_day, monthEnd);
         const dueDate = new Date(year, month - 1, dueDay, 12);
-        const remaining = Math.max(0, target - paid);
-        if (dueDate < today && remaining > 0) {
+        const amountUnknown = Boolean(client.is_variable_fee && paid === 0 && !record?.is_collection_incomplete);
+        const remaining = client.is_variable_fee
+          ? (record?.is_collection_incomplete ? Math.max(0, record.remaining_amount ?? target - paid) : 0)
+          : Math.max(0, target - paid);
+        if (dueDate < today && (amountUnknown || remaining > 0)) {
           alerts.push({
             client_id: client.id,
             client_name: client.name,
@@ -257,6 +308,7 @@ export class LocalClientRepository {
             billing_start_day: client.billing_start_day,
             billing_end_day: client.billing_end_day,
             days_overdue: Math.floor((today.getTime() - dueDate.getTime()) / 86400000),
+            amount_unknown: amountUnknown,
           });
         }
         month++;

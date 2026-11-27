@@ -46,6 +46,11 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       (filter === 'all' || (filter === 'overdue' ? alerts.some((alert) => alert.client_id === client.id) : client.status === filter));
   });
   const activeClients = clients.filter((client) => client.status === 'active');
+  const unknownExpectedCount = activeClients.filter((client) => {
+    const firstDue = getFirstBillingPeriod(client);
+    const billingStarted = firstDue.year < today.getFullYear() || (firstDue.year === today.getFullYear() && firstDue.month <= today.getMonth() + 1);
+    return billingStarted && client.is_variable_fee && !(client.records[currentKey]?.target_amount > 0);
+  }).length;
   const collected: Partial<Record<Client['currency'], number>> = {};
   const expected: Partial<Record<Client['currency'], number>> = {};
   const overdue: Partial<Record<Client['currency'], number>> = {};
@@ -68,6 +73,7 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     net[code] = (collected[code] || 0) - (monthlyExpenses[code] || 0);
   });
   alerts.forEach((alert) => { overdue[alert.currency] = (overdue[alert.currency] || 0) + alert.remaining_amount; });
+  const unknownOverdueCount = alerts.filter((alert) => alert.amount_unknown).length;
   clients.forEach((client) => Object.entries(client.records).filter(([key]) => key.startsWith(String(year))).forEach(([, record]) => {
     yearly[client.currency] = (yearly[client.currency] || 0) + record.installments.reduce((sum, payment) => sum + payment.amount, 0);
   }));
@@ -97,10 +103,14 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     clients.forEach((client) => MONTH_NAMES_TR.forEach((name, index) => {
       const monthNumber = index + 1;
       const record = client.records[`${year}-${String(monthNumber).padStart(2, '0')}`];
-      const target = record?.target_amount ?? client.monthly_retainer;
+      const target = client.is_variable_fee ? (record?.target_amount ?? 0) : (record?.target_amount ?? client.monthly_retainer);
       const paid = record?.installments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
-      const status = paid >= target ? 'Tahsil edildi' : paid > 0 ? 'Kısmi ödeme' : recordFor(client, year, monthNumber).late ? 'Gecikti' : 'Bekliyor';
-      rows.push([client.name, client.notes || '', `${name} ${year}`, `${client.billing_start_day}-${client.billing_end_day}`, `${target} ${client.currency}`, `${paid} ${client.currency}`, `${Math.max(0, target - paid)} ${client.currency}`, status, record?.installments.map((payment) => payment.paid_date).join(', ') || '', record?.installments.map((payment) => payment.note || payment.method || '').filter(Boolean).join(' / ') || '', record?.custom_notes || '']);
+      const monthState = recordFor(client, year, monthNumber);
+      const status = client.is_variable_fee
+        ? monthState.late ? (paid > 0 ? 'Eksik tahsilat' : 'Ücret yatırılmadı') : paid > 0 ? (record?.is_collection_incomplete ? 'Kısmi ödeme' : 'Tahsilat kaydedildi') : 'Ücret belirlenmedi'
+        : paid >= target ? 'Tahsil edildi' : paid > 0 ? 'Kısmi ödeme' : monthState.late ? 'Gecikti' : 'Bekliyor';
+      const remaining = client.is_variable_fee ? (record?.is_collection_incomplete ? record.remaining_amount || 0 : paid > 0 ? 0 : '') : Math.max(0, target - paid);
+      rows.push([client.name, client.notes || '', `${name} ${year}`, `${client.billing_start_day}-${client.billing_end_day}`, client.is_variable_fee && target <= 0 ? 'Belirsiz' : `${target} ${client.currency}`, `${paid} ${client.currency}`, remaining === '' ? 'Belirsiz' : `${remaining} ${client.currency}`, status, record?.installments.map((payment) => payment.paid_date).join(', ') || '', record?.installments.map((payment) => payment.note || payment.method || '').filter(Boolean).join(' / ') || '', record?.custom_notes || '']);
     }));
     const csv = `\uFEFF${rows.map((row) => row.map(quote).join(';')).join('\r\n')}`;
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
@@ -111,13 +121,15 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const recordFor = (client: Client, y: number, m: number) => {
     const key = `${y}-${String(m).padStart(2, '0')}`;
     const record = client.records[key];
-    const target = record?.target_amount ?? client.monthly_retainer;
+    const target = client.is_variable_fee ? (record?.target_amount ?? 0) : (record?.target_amount ?? client.monthly_retainer);
     const paid = record?.installments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
     const firstDue = getFirstBillingPeriod(client);
     const billingStarted = y > firstDue.year || (y === firstDue.year && m >= firstDue.month);
     const dueDay = Math.min(client.billing_end_day, new Date(y, m, 0).getDate());
-    const late = client.status === 'active' && billingStarted && (y < today.getFullYear() || (y === today.getFullYear() && (m < today.getMonth() + 1 || (m === today.getMonth() + 1 && today.getDate() > dueDay)))) && paid < target;
-    return { key, target, paid, late, done: paid >= target && target > 0 };
+    const dueDatePassed = y < today.getFullYear() || (y === today.getFullYear() && (m < today.getMonth() + 1 || (m === today.getMonth() + 1 && today.getDate() > dueDay)));
+    const late = client.status === 'active' && billingStarted && dueDatePassed && (client.is_variable_fee ? (paid === 0 || (record?.is_collection_incomplete && (record.remaining_amount || 0) > 0)) : paid < target);
+    const done = client.is_variable_fee ? paid > 0 && !record?.is_collection_incomplete : paid >= target && target > 0;
+    return { key, target, paid, late, done };
   };
 
   return <div className={styles.container}>
@@ -131,16 +143,16 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     </header>
 
     {alerts.length > 0 && <section className={styles.alertPanel}>
-      <div className={styles.alertMark}><AlertTriangle size={18}/></div><div className={styles.alertCopy}><strong>{alerts.length} tahsilat gecikmede</strong><span>{alerts.slice(0, 3).map((item) => `${item.client_name} · ${item.month_name}`).join('  /  ')}{alerts.length > 3 ? `  /  +${alerts.length - 3} kurum` : ''}</span></div>
+      <div className={styles.alertMark}><AlertTriangle size={18}/></div><div className={styles.alertCopy}><strong>{alerts.length} tahsilat gecikmede</strong><span>{alerts.slice(0, 3).map((item) => `${item.client_name} · ${item.month_name}${item.amount_unknown ? ' · Ücret yatırılmadı' : ` · Kalan ${money(item.remaining_amount, item.currency)}`}`).join('  /  ')}{alerts.length > 3 ? `  /  +${alerts.length - 3} kayıt` : ''}</span></div>
       <button onClick={() => setFilter('overdue')}>Gecikenleri gör <ArrowRight size={15}/></button>
     </section>}
 
     <section className={styles.metrics}>
       <article className={styles.metric}><div className={styles.metricIcon}><Wallet size={17}/></div><span>Bu ay tahsil edildi</span><strong>{mixedMoney(collected)}</strong><small>Aktif kurumlardan alınan</small></article>
-      <article className={styles.metric}><div className={styles.metricIcon}><CalendarDays size={17}/></div><span>Bu ay beklenen</span><strong>{mixedMoney(expected)}</strong><small>{activeClients.length} aktif kurum</small></article>
+      <article className={styles.metric}><div className={styles.metricIcon}><CalendarDays size={17}/></div><span>Bu ay beklenen</span><strong>{unknownExpectedCount > 0 && !Object.values(expected).some((amount) => (amount || 0) > 0) ? 'Tutar bekleniyor' : mixedMoney(expected)}</strong><small>{unknownExpectedCount ? `${unknownExpectedCount} kurumda ücret belirsiz` : `${activeClients.length} aktif kurum`}</small></article>
       <article className={`${styles.metric} ${styles.metricExpense}`}><div className={styles.metricIcon}><ArrowDownLeft size={17}/></div><span>Bu ay gider</span><strong>{mixedMoney(monthlyExpenses)}</strong><small>{currentExpenses.length} gider kaydı</small></article>
       <article className={`${styles.metric} ${styles.metricNet}`}><div className={styles.metricIcon}><TrendingUp size={17}/></div><span>Tahsilat − gider</span><strong>{mixedMoney(net)}</strong><small>Bu ay net nakit akışı</small></article>
-      <article className={`${styles.metric} ${alerts.length ? styles.metricDanger : ''}`}><div className={styles.metricIcon}><Clock3 size={17}/></div><span>Geciken alacak</span><strong>{mixedMoney(overdue)}</strong><small>{alerts.length ? `${alerts.length} ödeme takibi gerekiyor` : 'Gecikmiş ödeme yok'}</small></article>
+      <article className={`${styles.metric} ${alerts.length ? styles.metricDanger : ''}`}><div className={styles.metricIcon}><Clock3 size={17}/></div><span>Geciken alacak</span><strong>{unknownOverdueCount > 0 && !alerts.some((alert) => !alert.amount_unknown) ? 'Tutar bekleniyor' : mixedMoney(overdue)}</strong><small>{alerts.length ? `${alerts.length} ödeme · ${unknownOverdueCount ? `${unknownOverdueCount} belirsiz tutar` : 'takip gerekiyor'}` : 'Gecikmiş ödeme yok'}</small></article>
       <article className={styles.metric}><div className={styles.metricIcon}><TrendingUp size={17}/></div><span>{year} tahsilatı</span><strong>{mixedMoney(yearly)}</strong><small>Yıl başından bugüne</small></article>
     </section>
 
@@ -164,13 +176,13 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         const payment = recordFor(client, today.getFullYear(), today.getMonth() + 1);
         const progress = payment.target > 0 ? Math.min(100, (payment.paid / payment.target) * 100) : 0;
         const state = payment.done ? 'paid' : payment.late ? 'late' : payment.paid ? 'partial' : 'waiting';
-        const label = state === 'paid' ? 'Tahsil edildi' : state === 'late' ? 'Ödeme gecikti' : state === 'partial' ? 'Kısmi ödeme' : `Her ay ${client.billing_start_day}–${client.billing_end_day} arası`;
+        const label = state === 'paid' ? (client.is_variable_fee ? 'Tahsilat kaydedildi' : 'Tahsil edildi') : state === 'late' ? client.is_variable_fee ? payment.paid > 0 ? 'Eksik tahsilat' : 'Ücret yatırılmadı' : 'Ödeme gecikti' : state === 'partial' ? 'Kısmi ödeme' : `Her ay ${client.billing_start_day}–${client.billing_end_day} arası`;
         return <article key={client.id} className={`${styles.clientCard} ${selectedId === client.id ? styles.openCard : ''}`}>
           <button className={styles.cardMain} onClick={() => setSelectedId(selectedId === client.id ? null : client.id)}>
             <div className={styles.cardTop}><div className={styles.avatar}>{client.name.trim().charAt(0).toLocaleUpperCase('tr-TR')}</div><div className={styles.clientIdentity}><strong>{client.name}</strong><span>{client.contact_person || (client.status === 'active' ? 'Aktif kurum' : client.status === 'paused' ? 'Durduruldu' : 'Arşivlendi')}</span></div><span className={`${styles.status} ${styles[state]}`}>{state === 'paid' ? <CheckCircle2 size={13}/> : state === 'late' ? <AlertTriangle size={13}/> : state === 'partial' ? <Clock3 size={13}/> : <CalendarDays size={13}/>} {state === 'waiting' ? client.status === 'active' ? label : client.status === 'paused' ? 'Durduruldu' : 'Arşiv' : label}</span></div>
             <p className={styles.services}>{client.notes || 'Hizmet kapsamı henüz eklenmedi.'}</p>
-            <div className={styles.cardBottom}><div><small>Aylık hizmet bedeli</small><strong>{money(client.monthly_retainer, client.currency)}<em> / ay</em></strong></div><div className={styles.paymentRange}><small><CalendarDays size={13}/> Tahsilat dönemi</small><strong>Her ayın {client.billing_start_day}–{client.billing_end_day}. günü</strong></div><div className={styles.cardLink}>{selectedId === client.id ? 'Detayı kapat' : 'Detayları gör'} <ArrowRight size={15}/></div></div>
-            <div className={styles.progressBlock}><div className={styles.progressLabels}><span>{MONTH_NAMES_TR[today.getMonth()]} tahsilatı</span><strong>{money(payment.paid, client.currency)} <em>/ {money(payment.target, client.currency)}</em></strong></div><div className={styles.progressTrack}><span className={`${styles.progressFill} ${state === 'late' ? styles.progressLate : ''}`} style={{ width: `${progress}%` }}/></div></div>
+            <div className={styles.cardBottom}><div><small>Aylık hizmet bedeli</small><strong>{client.is_variable_fee ? 'Değişken ücret' : money(client.monthly_retainer, client.currency)}{!client.is_variable_fee && <em> / ay</em>}</strong></div><div className={styles.paymentRange}><small><CalendarDays size={13}/> Tahsilat dönemi</small><strong>Her ayın {client.billing_start_day}–{client.billing_end_day}. günü</strong></div><div className={styles.cardLink}>{selectedId === client.id ? 'Detayı kapat' : 'Detayları gör'} <ArrowRight size={15}/></div></div>
+            <div className={styles.progressBlock}><div className={styles.progressLabels}><span>{MONTH_NAMES_TR[today.getMonth()]} tahsilatı</span><strong>{money(payment.paid, client.currency)} <em>/ {client.is_variable_fee && payment.target <= 0 ? 'tutar belirlenmedi' : money(payment.target, client.currency)}</em></strong></div><div className={styles.progressTrack}><span className={`${styles.progressFill} ${state === 'late' ? styles.progressLate : ''}`} style={{ width: `${progress}%` }}/></div></div>
           </button>
           {selectedId === client.id && <div className={styles.detail}>
             <div className={styles.detailHeader}><div><span className={styles.eyebrow}>AYLIK TAHSİLAT TAKİBİ</span><h3>{client.name} <span>· {year}</span></h3></div><div className={styles.detailActions}><button onClick={() => { setEditing(client); setClientModal(true); }}><Edit2 size={14}/> Düzenle</button><button className={styles.deleteButton} onClick={() => deleteClient(client)}><Trash2 size={14}/></button></div></div>
@@ -183,6 +195,6 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
     {clientModal && <ClientModal client={editing} onClose={() => { setClientModal(false); setEditing(null); }} onSave={saveClient}/>}
     {expenseModalOpen && <ExpenseModal todayStr={todayStr} onClose={() => setExpenseModalOpen(false)} onSave={saveExpense}/>}
-    {selected && paymentMonth && <PaymentRecordModal client={selected} yearMonth={paymentMonth} todayStr={todayStr} onClose={() => setPaymentMonth(null)} onAddPayment={(amount, date, note, method) => { localClientRepository.addPayment(selected.id, paymentMonth, amount, date, note, method); refresh(); }} onMarkFullPaid={() => { localClientRepository.markMonthFullyPaid(selected.id, paymentMonth, todayStr); refresh(); }} onResetPayment={() => { localClientRepository.resetMonthPayment(selected.id, paymentMonth); refresh(); }} onToggleInvoice={(invoice) => { localClientRepository.toggleInvoiceStatus(selected.id, paymentMonth, invoice); refresh(); }} onSaveMonthNotes={(notes) => { localClientRepository.saveMonthNotes(selected.id, paymentMonth, notes); refresh(); }}/ >}
+    {selected && paymentMonth && <PaymentRecordModal client={selected} yearMonth={paymentMonth} todayStr={todayStr} onClose={() => setPaymentMonth(null)} onAddPayment={(amount, date, note, method) => { localClientRepository.addPayment(selected.id, paymentMonth, amount, date, note, method); refresh(); }} onMarkFullPaid={() => { localClientRepository.markMonthFullyPaid(selected.id, paymentMonth, todayStr); refresh(); }} onResetPayment={() => { localClientRepository.resetMonthPayment(selected.id, paymentMonth); refresh(); }} onToggleInvoice={(invoice) => { localClientRepository.toggleInvoiceStatus(selected.id, paymentMonth, invoice); refresh(); }} onSaveMonthNotes={(notes) => { localClientRepository.saveMonthNotes(selected.id, paymentMonth, notes); refresh(); }} onSetMonthCollectionIncomplete={(incomplete, remainingAmount) => { localClientRepository.setMonthCollectionIncomplete(selected.id, paymentMonth, incomplete, remainingAmount); refresh(); }}/ >}
   </div>;
 };

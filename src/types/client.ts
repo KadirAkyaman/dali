@@ -19,6 +19,8 @@ export interface MonthlyBillingRecord {
   month: number; // 1 - 12
   year: number;
   target_amount: number;
+  is_collection_incomplete?: boolean;
+  remaining_amount?: number;
   installments: PaymentInstallment[];
   is_invoiced?: boolean; // Fatura kesildi mi?
   invoice_number?: string | null;
@@ -33,6 +35,8 @@ export interface Client {
   email?: string | null;
   phone?: string | null;
   monthly_retainer: number; // Aylık Hizmet Bedeli
+  is_variable_fee?: boolean; // Aylık ücret önceden sabit değil
+  fee_tracking_started_at?: string; // Ücret modelinin geçerlilik başlangıcı
   currency: CurrencyCode;
   billing_start_day: number; // Ödeme başlangıç günü (örn: 1)
   billing_end_day: number; // Ödeme son günü (örn: 10)
@@ -42,8 +46,8 @@ export interface Client {
   records: Record<string, MonthlyBillingRecord>; // key: "YYYY-MM"
 }
 
-export const getFirstBillingPeriod = (client: Pick<Client, 'created_at'>) => {
-  const createdAt = new Date(client.created_at);
+export const getFirstBillingPeriod = (client: Pick<Client, 'created_at' | 'fee_tracking_started_at'>) => {
+  const createdAt = new Date(client.fee_tracking_started_at || client.created_at);
   const nextMonth = createdAt.getMonth() + 2;
   return nextMonth > 12
     ? { year: createdAt.getFullYear() + 1, month: 1 }
@@ -62,6 +66,7 @@ export interface OverdueAlert {
   billing_start_day: number;
   billing_end_day: number;
   days_overdue: number;
+  amount_unknown?: boolean;
 }
 
 export const MONTH_NAMES_TR = [

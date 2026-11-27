@@ -15,6 +15,7 @@ export const ClientModal: React.FC<ClientModalProps> = ({ client, onClose, onSav
   const [email, setEmail] = useState(client?.email || '');
   const [phone, setPhone] = useState(client?.phone || '');
   const [monthlyRetainer, setMonthlyRetainer] = useState(client ? String(client.monthly_retainer) : '');
+  const [variableFee, setVariableFee] = useState(Boolean(client?.is_variable_fee));
   const [currency, setCurrency] = useState<CurrencyCode>(client?.currency || 'TRY');
   const [startDay, setStartDay] = useState(client?.billing_start_day ? String(client.billing_start_day) : '1');
   const [endDay, setEndDay] = useState(client?.billing_end_day ? String(client.billing_end_day) : '10');
@@ -29,7 +30,7 @@ export const ClientModal: React.FC<ClientModalProps> = ({ client, onClose, onSav
       return;
     }
     const retainer = parseFloat(monthlyRetainer);
-    if (isNaN(retainer) || retainer <= 0) {
+    if (!variableFee && (isNaN(retainer) || retainer <= 0)) {
       setError('Lütfen geçerli bir aylık ücret girin.');
       return;
     }
@@ -49,7 +50,11 @@ export const ClientModal: React.FC<ClientModalProps> = ({ client, onClose, onSav
       contact_person: contactPerson.trim() || undefined,
       email: email.trim() || undefined,
       phone: phone.trim() || undefined,
-      monthly_retainer: retainer,
+      monthly_retainer: variableFee ? 0 : retainer,
+      is_variable_fee: variableFee,
+      fee_tracking_started_at: client && variableFee !== Boolean(client.is_variable_fee)
+        ? new Date().toISOString()
+        : client?.fee_tracking_started_at || (variableFee ? new Date().toISOString() : undefined),
       currency,
       billing_start_day: sDay,
       billing_end_day: eDay,
@@ -95,7 +100,7 @@ export const ClientModal: React.FC<ClientModalProps> = ({ client, onClose, onSav
           <div className={styles.formRow}>
             <div className={styles.formGroup} style={{ flex: 2 }}>
               <label>
-                Aylık Retainer / Ücret <span className={styles.required}>*</span>
+                Aylık Retainer / Ücret {!variableFee && <span className={styles.required}>*</span>}
               </label>
               <div className={styles.inputWrapper}>
                 <span className={styles.currencyPrefix}>{CURRENCY_SYMBOLS[currency]}</span>
@@ -104,6 +109,7 @@ export const ClientModal: React.FC<ClientModalProps> = ({ client, onClose, onSav
                   placeholder="30000"
                   value={monthlyRetainer}
                   onChange={(e) => setMonthlyRetainer(e.target.value)}
+                  disabled={variableFee}
                   min="0"
                   step="any"
                 />
@@ -124,6 +130,11 @@ export const ClientModal: React.FC<ClientModalProps> = ({ client, onClose, onSav
               </select>
             </div>
           </div>
+
+          <label className={styles.variableFeeToggle}>
+            <input type="checkbox" checked={variableFee} onChange={(event) => setVariableFee(event.target.checked)} />
+            <span><strong>Aylık ücret değişken / henüz belli değil</strong><small>Bu kurum için sabit tutar aranmaz; ödeme yoksa tutar belirtmeden uyarı gösterilir.</small></span>
+          </label>
 
           {/* Ödeme Gün Aralığı */}
           <div className={styles.formGroup}>
