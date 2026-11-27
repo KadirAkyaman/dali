@@ -1,82 +1,9 @@
 import { Client, MonthlyBillingRecord, PaymentInstallment, OverdueAlert, MONTH_NAMES_TR } from '../types/client';
 
 const STORAGE_KEY = 'dali_clients';
+const LEGACY_DEMO_CLIENT_IDS = new Set(['client-acme', 'client-lumina']);
 
-const DEFAULT_CLIENTS: Client[] = [
-  {
-    id: 'client-acme',
-    name: 'Acme Dijital Medya',
-    contact_person: 'Can Özkan',
-    email: 'can@acmedijital.com',
-    phone: '+90 532 100 20 30',
-    monthly_retainer: 35000,
-    currency: 'TRY',
-    billing_start_day: 1,
-    billing_end_day: 10,
-    status: 'active',
-    notes: 'Aylık UX/UI danışmanlığı ve tasarım sistemi desteği.',
-    created_at: new Date().toISOString(),
-    records: {
-      '2026-10': {
-        month: 10,
-        year: 2026,
-        target_amount: 35000,
-        installments: [
-          {
-            id: 'pay-1',
-            amount: 35000,
-            paid_date: '2026-10-05',
-            note: 'Ekim ayı retainer bedeli',
-            method: 'Havale/EFT',
-          },
-        ],
-        is_invoiced: true,
-        invoice_number: 'ACM-2026-10',
-        status: 'paid',
-      },
-      '2026-11': {
-        month: 11,
-        year: 2026,
-        target_amount: 35000,
-        installments: [
-          {
-            id: 'pay-2',
-            amount: 20000,
-            paid_date: '2026-11-04',
-            note: 'İlk taksit (avans)',
-            method: 'Havale/EFT',
-          },
-        ],
-        is_invoiced: true,
-        status: 'partial', // 15.000 TL kaldı, ayın 10'u geçtiği için gecikmede sayılacak
-      },
-    },
-  },
-  {
-    id: 'client-lumina',
-    name: 'Lumina Studio',
-    contact_person: 'Zeynep Kaya',
-    email: 'zeynep@luminastudio.co',
-    phone: '+90 544 200 40 50',
-    monthly_retainer: 1200,
-    currency: 'USD',
-    billing_start_day: 15,
-    billing_end_day: 25,
-    status: 'active',
-    notes: 'Global frontend geliştirme ve bakım sözleşmesi.',
-    created_at: new Date().toISOString(),
-    records: {
-      '2026-11': {
-        month: 11,
-        year: 2026,
-        target_amount: 1200,
-        installments: [],
-        is_invoiced: false,
-        status: 'pending', // 15-25 arası henüz gelmedi veya içinde
-      },
-    },
-  },
-];
+const DEFAULT_CLIENTS: Client[] = [];
 
 export class LocalClientRepository {
   getClients(): Client[] {
@@ -84,7 +11,11 @@ export class LocalClientRepository {
       const data = localStorage.getItem(STORAGE_KEY);
       if (data) {
         const parsed = JSON.parse(data);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) {
+          const clients = parsed.filter((client: Client) => !LEGACY_DEMO_CLIENT_IDS.has(client.id));
+          if (clients.length !== parsed.length) this.saveClients(clients);
+          return clients;
+        }
       }
       const initial = JSON.parse(JSON.stringify(DEFAULT_CLIENTS));
       this.saveClients(initial);

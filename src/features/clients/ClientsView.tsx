@@ -6,7 +6,7 @@ import { ClientModal } from '../../components/clients/ClientModal';
 import { PaymentRecordModal } from '../../components/clients/PaymentRecordModal';
 import styles from './ClientsView.module.css';
 
-type Filter = 'all' | 'active' | 'overdue' | 'archived';
+type Filter = 'all' | 'active' | 'paused' | 'overdue' | 'archived';
 const money = (value: number, currency: Client['currency']) => `${value.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ${CURRENCY_SYMBOLS[currency] || '₺'}`;
 const mixedMoney = (totals: Partial<Record<Client['currency'], number>>) => {
   const parts = (Object.entries(totals) as [Client['currency'], number][]).filter(([, value]) => value > 0).map(([currency, value]) => money(value, currency));
@@ -65,7 +65,7 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       const record = client.records[`${year}-${String(monthNumber).padStart(2, '0')}`];
       const target = record?.target_amount ?? client.monthly_retainer;
       const paid = record?.installments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
-      const status = paid >= target ? 'Tahsil edildi' : paid > 0 ? 'Kısmi ödeme' : 'Bekliyor';
+      const status = paid >= target ? 'Tahsil edildi' : paid > 0 ? 'Kısmi ödeme' : recordFor(client, year, monthNumber).late ? 'Gecikti' : 'Bekliyor';
       rows.push([client.name, client.notes || '', `${name} ${year}`, `${client.billing_start_day}-${client.billing_end_day}`, `${target} ${client.currency}`, `${paid} ${client.currency}`, `${Math.max(0, target - paid)} ${client.currency}`, status, record?.installments.map((payment) => payment.paid_date).join(', ') || '', record?.installments.map((payment) => payment.note || payment.method || '').filter(Boolean).join(' / ') || '', record?.custom_notes || '']);
     }));
     const csv = `\uFEFF${rows.map((row) => row.map(quote).join(';')).join('\r\n')}`;
@@ -107,7 +107,7 @@ export const ClientsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
     <section className={styles.workspace}>
       <div className={styles.toolbar}><div><h2>Kurumlar</h2><p>{filtered.length} kayıt listeleniyor</p></div><div className={styles.toolbarActions}><label className={styles.search}><Search size={16}/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Kurum veya hizmet ara"/></label><button className={styles.exportButton} onClick={exportYear} title={`${year} tahsilat raporunu CSV indir`}><Download size={15}/><span>Raporu indir</span></button></div></div>
-      <nav className={styles.filters} aria-label="Kurum filtreleri">{([['all', 'Tümü'], ['active', 'Aktif'], ['overdue', 'Geciken'], ['archived', 'Arşiv']] as [Filter, string][]).map(([key, label]) => <button key={key} className={filter === key ? styles.selectedFilter : ''} onClick={() => setFilter(key)}>{label}<span>{key === 'all' ? clients.length : key === 'overdue' ? new Set(alerts.map((a) => a.client_id)).size : clients.filter((c) => c.status === key).length}</span></button>)}</nav>
+      <nav className={styles.filters} aria-label="Kurum filtreleri">{([['all', 'Tümü'], ['active', 'Aktif'], ['paused', 'Durduruldu'], ['overdue', 'Geciken'], ['archived', 'Arşiv']] as [Filter, string][]).map(([key, label]) => <button key={key} className={filter === key ? styles.selectedFilter : ''} onClick={() => setFilter(key)}>{label}<span>{key === 'all' ? clients.length : key === 'overdue' ? new Set(alerts.map((a) => a.client_id)).size : clients.filter((c) => c.status === key).length}</span></button>)}</nav>
       {filtered.length === 0 ? <div className={styles.empty}><div><Building2 size={22}/></div><strong>{query ? 'Eşleşen kurum bulunamadı' : 'Henüz kurum eklenmemiş'}</strong><p>Hizmet verdiğiniz kurumları ekleyin; ödeme dönemlerini ve tahsilat notlarını burada takip edin.</p>{!query && <button className={styles.primaryButton} onClick={() => { setEditing(null); setClientModal(true); }}><Plus size={16}/> İlk kurumu ekle</button>}</div> : <div className={styles.cardGrid}>{filtered.map((client) => {
         const payment = recordFor(client, today.getFullYear(), today.getMonth() + 1);
         const state = payment.done ? 'paid' : payment.late ? 'late' : payment.paid ? 'partial' : 'waiting';
